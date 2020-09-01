@@ -44,7 +44,6 @@ def new_bet():
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()   
 
-    # print("What did you bet on? \n1: ML \n2: Spread \n3: Prop \n4: Other")
     matchup = input("Which teams are playing: ")
     type_ = input("What type of bet is it: ")
     bet_on = input("What did you bet on: ")
@@ -67,7 +66,47 @@ def new_bet():
 
     conn.commit()
     conn.close()
+
+
+def view_open_bets():
+    """Look at open bets"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
+
+    c.execute("""SELECT * FROM open_bets""")
+    open = c.fetchall()
+
+    for i in open:
+        print(i)
+
+    conn.commit()
+    conn.close()
+
+
+def view_closed_bets():
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
+
+    c.execute("""SELECT * FROM closed_bets""")
+    open = c.fetchall()
+
+    for i in open:
+        print(i)
+
+    conn.commit()
+    conn.close()
+
+# new_bet()
+view_open_bets()
+
+
+def main():
+
+    return
+
+
+if __name__ == "__main__":
+    main()
     
-new_bet()
-
-
