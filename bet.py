@@ -20,6 +20,8 @@ if not path.isfile("bets.db"):
     c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (type text, matchup text, bet_on text, odds text, 
                 wager int, to_win int, outcome text, change int, date text)""")
 
+    c.execute("""CREATE TABLE IF NOT EXISTS bankroll (amount int)""")
+
     conn.commit()
     conn.close()
 
@@ -148,14 +150,19 @@ def close_bet():
         (open_bets[j][0], open_bets[j][1], open_bets[j][2], open_bets[j][3], 
         open_bets[j][4], open_bets[j][5], outcome, change, open_bets[j][6]))
 
-       print(f"Bet #{j} closed")
+        print(f"Bet #{j} closed")
        
     conn.commit()
     conn.close()
-        
-# new_bet()
-# view_open_bets()
-close_bet()
+
+
+def bankroll_remove(amount: int):
+    pass
+
+
+def bankroll_add(amount: int):
+    pass
+
 
 def main():
 
