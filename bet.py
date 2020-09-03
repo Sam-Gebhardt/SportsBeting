@@ -5,15 +5,24 @@ Items to keep track of: Bet, Odds, Amount, Payout, Outcome
 
 import sqlite3
 from datetime import date
+from os import path
 
-conn = sqlite3.connect('bets.db')
-c = conn.cursor()
 
-c.execute("""CREATE TABLE IF NOT EXISTS open_bets (type text, matchup text, bet_on text, odds text, 
-            wager int, to_win int, date text)""")
+if not path.isfile("bets.db"):
+    """Check if db exsists, creates it if not"""
     
-c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (type text, matchup text, bet_on text, odds text, 
-            wager int, to_win int, outcome text, change int, date text)""")
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    c.execute("""CREATE TABLE IF NOT EXISTS open_bets (type text, matchup text, bet_on text, odds text, 
+                wager int, to_win int, date text)""")
+        
+    c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (type text, matchup text, bet_on text, odds text, 
+                wager int, to_win int, outcome text, change int, date text)""")
+
+    conn.commit()
+    conn.close()
+
 """
 Table contents
 
@@ -75,9 +84,9 @@ def view_open_bets():
     c = conn.cursor() 
 
     c.execute("""SELECT * FROM open_bets""")
-    open = c.fetchall()
+    open_bets = c.fetchall()
 
-    for i in open:
+    for i in open_bets:
         print(i)
 
     conn.commit()
@@ -90,17 +99,63 @@ def view_closed_bets():
     c = conn.cursor() 
 
     c.execute("""SELECT * FROM closed_bets""")
-    open = c.fetchall()
+    open_bets = c.fetchall()
 
-    for i in open:
+    for i in open_bets:
         print(i)
 
     conn.commit()
     conn.close()
 
-# new_bet()
-view_open_bets()
 
+def close_bet():
+    """Move an open bet to closed_bet table"""
+
+    # make custom search
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
+
+    c.execute("""SELECT * FROM open_bets""")
+    open_bets = c.fetchall()
+
+    for i, bet in enumerate(open_bets):
+        print(f"{i}: {bet}")
+    
+    close = input("To close: ")
+
+    for j in close:
+        try:
+            j = int(j)
+        except ValueError:
+            continue
+
+        while(True):
+
+            outcome = input(f"Win or loose bet #{j}: ")
+            outcome.lower()
+            if outcome == "w" or outcome == "l":
+                break
+        
+        change = 0
+        # default is 0 because wager is already removed from bank roll
+        if outcome == "w":
+            change = open_bets[j][4] + open_bets[j][5]
+            # change = wager + to_win
+        
+        c.execute("""INSERT INTO closed_bets (type, matchup, bet_on, odds, wager, 
+        to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""" ,
+        (open_bets[j][0], open_bets[j][1], open_bets[j][2], open_bets[j][3], 
+        open_bets[j][4], open_bets[j][5], outcome, change, open_bets[j][6]))
+
+       print(f"Bet #{j} closed")
+       
+    conn.commit()
+    conn.close()
+        
+# new_bet()
+# view_open_bets()
+close_bet()
 
 def main():
 
@@ -109,4 +164,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
