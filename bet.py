@@ -22,6 +22,9 @@ if not path.isfile("bets.db"):
 
     c.execute("""CREATE TABLE IF NOT EXISTS bankroll (amount int)""")
 
+    bank = input("Enter starting bankroll: ")
+    c.execute("""INSERT INTO bankroll (amount, ) VALUES (?, )""", (bank, ))
+
     conn.commit()
     conn.close()
 
@@ -134,7 +137,7 @@ def close_bet():
 
         while(True):
 
-            outcome = input(f"Win or loose bet #{j}: ")
+            outcome = input(f"W/L bet #{j}: ")
             outcome.lower()
             if outcome == "w" or outcome == "l":
                 break
@@ -157,8 +160,23 @@ def close_bet():
 
 
 def bankroll_remove(amount: int):
-    pass
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
 
+    c.execute("""SELECT * FROM bankroll""")
+    bank = c.fetchall()
+
+    bank -= amount
+    if bank < 0:
+        print("Your bet is more than bankroll. Aborting")
+        return False
+
+    c.execute("""UPDATE bankroll SET amount = ? """, (bank, ))
+    
+    conn.commit()
+    conn.close()
+
+    return True
 
 def bankroll_add(amount: int):
     pass
@@ -171,3 +189,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# bankroll_remove
