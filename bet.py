@@ -52,6 +52,40 @@ If I bet on the spread:
 spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 """
 
+
+def bankroll_remove(amount: int):
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
+
+    c.execute("""SELECT * FROM bankroll""")
+    bank = c.fetchall()[0][0]
+
+    bank -= amount
+    if bank < 0:
+        print("Your bet is more than bankroll. Aborting")
+        return False
+
+    c.execute("""UPDATE bankroll SET amount = ? """, (bank, ))
+    
+    conn.commit()
+    conn.close()
+
+    return True
+
+def bankroll_add(amount: int):
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
+
+    c.execute("""SELECT * FROM bankroll""")
+    bank = c.fetchall()[0][0]
+
+    bank += amount
+    c.execute("""UPDATE bankroll SET amount = ? """, (bank, ))
+    
+    conn.commit()
+    conn.close()
+
+
 def new_bet():
     """Get info for new bets"""
     
@@ -74,10 +108,11 @@ def new_bet():
 
     to_win = round(to_win, 2)
     when = date.today()
+    if bankroll_remove(wager):
 
-    c.execute("""INSERT INTO open_bets (type, matchup, bet_on, odds, wager, to_win, date) VALUES
-    (?, ?, ?, ?, ?, ?, ?) """, (type_, matchup, bet_on, odds, wager, to_win, when))
-
+        c.execute("""INSERT INTO open_bets (type, matchup, bet_on, odds, wager, to_win, date) VALUES
+        (?, ?, ?, ?, ?, ?, ?) """, (type_, matchup, bet_on, odds, wager, to_win, when))
+    
     conn.commit()
     conn.close()
 
@@ -159,29 +194,6 @@ def close_bet():
     conn.close()
 
 
-def bankroll_remove(amount: int):
-    conn = sqlite3.connect('bets.db')
-    c = conn.cursor() 
-
-    c.execute("""SELECT * FROM bankroll""")
-    bank = c.fetchall()
-
-    bank -= amount
-    if bank < 0:
-        print("Your bet is more than bankroll. Aborting")
-        return False
-
-    c.execute("""UPDATE bankroll SET amount = ? """, (bank, ))
-    
-    conn.commit()
-    conn.close()
-
-    return True
-
-def bankroll_add(amount: int):
-    pass
-
-
 def main():
 
     return
@@ -189,5 +201,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# bankroll_remove
