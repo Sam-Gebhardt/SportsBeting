@@ -23,7 +23,7 @@ if not path.isfile("bets.db"):
     c.execute("""CREATE TABLE IF NOT EXISTS bankroll (amount int)""")
 
     bank = input("Enter starting bankroll: ")
-    c.execute("""INSERT INTO bankroll (amount, ) VALUES (?, )""", (bank, ))
+    c.execute("""INSERT INTO bankroll (amount) VALUES (?)""", bank)
 
     conn.commit()
     conn.close()
@@ -194,6 +194,30 @@ def close_bet():
     conn.close()
 
 
+def custom_search():
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
+
+    search = input("Search by and value: ")
+    search = search.split(",")
+
+    for i in range(len(search)):
+        search[i] = search[i].strip()
+
+    query = f"""SELECT * FROM open_bets WHERE ({search[0]} = ?)""" # Use for loop to make mulit-var custom search
+    c.execute(query, (search[1], ))
+    results = c.fetchall()
+
+    for bet in results:
+        print(bet)
+    
+    conn.commit()
+    conn.close()
+
+
+# new_bet()
+custom_search()
 def main():
 
     return
