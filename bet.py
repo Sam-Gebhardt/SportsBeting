@@ -20,10 +20,11 @@ if not path.isfile("bets.db"):
     c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (type text, matchup text, bet_on text, odds text, 
                 wager int, to_win int, outcome text, change int, date text)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS bankroll (amount int)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount int)""")
 
     bank = input("Enter starting bankroll: ")
-    c.execute("""INSERT INTO bankroll (amount) VALUES (?)""", bank)
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ( date.today(), bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ( "Master", bank))
 
     conn.commit()
     conn.close()
@@ -52,6 +53,19 @@ If I bet on the spread:
 spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 """
 
+def bankroll_history(master_amount: int):
+    """Keeps track of the changes in bankroll over time"""
+
+    c.execute("""SELECT * FROM bankroll WHERE date = ?""", (date.today(), ))
+    bank = c.fetchall()
+
+    if len(bank) == 0:
+        c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), master_amount))
+        return
+    
+    c.execute("""UPDATE bankroll set amount = ? WHERE date = ?""", (master_amount, "Master"))
+
+
 
 def bankroll_remove(amount: int):
     conn = sqlite3.connect('bets.db')
@@ -65,7 +79,8 @@ def bankroll_remove(amount: int):
         print("Your bet is more than bankroll. Aborting")
         return False
 
-    c.execute("""UPDATE bankroll SET amount = ? """, (bank, ))
+    bankroll_history(bank)
+    # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ? """, (bank, "Master"))
     
     conn.commit()
     conn.close()
@@ -80,7 +95,8 @@ def bankroll_add(amount: int):
     bank = c.fetchall()[0][0]
 
     bank += amount
-    c.execute("""UPDATE bankroll SET amount = ? """, (bank, ))
+    bankroll_history(bank)
+    # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ?""", (bank, "Master" ))
     
     conn.commit()
     conn.close()
@@ -151,8 +167,6 @@ def view_closed_bets():
 def close_bet():
     """Move an open bet to closed_bet table"""
 
-    # make custom search
-
     conn = sqlite3.connect('bets.db')
     c = conn.cursor() 
 
@@ -216,7 +230,6 @@ def custom_search():
     conn.close()
 
 
-# new_bet()
 custom_search()
 def main():
 
@@ -225,3 +238,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+#
