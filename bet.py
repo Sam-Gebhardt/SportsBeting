@@ -23,8 +23,8 @@ if not path.isfile("bets.db"):
     c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount int)""")
 
     bank = input("Enter starting bankroll: ")
-    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ( date.today(), bank))
-    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ( "Master", bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
 
     conn.commit()
     conn.close()
@@ -53,8 +53,9 @@ If I bet on the spread:
 spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 """
 
-def bankroll_history(master_amount: int):
+def bankroll_history(master_amount: int, c, conn):
     """Keeps track of the changes in bankroll over time"""
+
 
     c.execute("""SELECT * FROM bankroll WHERE date = ?""", (date.today(), ))
     bank = c.fetchall()
@@ -71,15 +72,15 @@ def bankroll_remove(amount: int):
     conn = sqlite3.connect('bets.db')
     c = conn.cursor() 
 
-    c.execute("""SELECT * FROM bankroll""")
-    bank = c.fetchall()[0][0]
+    c.execute("""SELECT * FROM bankroll WHERE date = ?""", ("Master", ))
+    bank = c.fetchall()[0][1]
 
     bank -= amount
     if bank < 0:
         print("Your bet is more than bankroll. Aborting")
         return False
 
-    bankroll_history(bank)
+    bankroll_history(bank, c, conn)
     # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ? """, (bank, "Master"))
     
     conn.commit()
@@ -131,6 +132,9 @@ def new_bet():
     
     conn.commit()
     conn.close()
+
+    print("")
+    main()
 
 
 def view_open_bets():
@@ -202,11 +206,41 @@ def close_bet():
         (open_bets[j][0], open_bets[j][1], open_bets[j][2], open_bets[j][3], 
         open_bets[j][4], open_bets[j][5], outcome, change, open_bets[j][6]))
 
-        print(f"Bet #{j} closed")
+        # c.execute("""DELETE)
+
+        print(f"Bet #{j} closed\n")
        
     conn.commit()
     conn.close()
 
+    main()
+
+
+def delete_bet():
+    """Delete a bet"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    remove = input("Remove open or closed bet: ")
+    query = f"""SELECT * FROM {remove}_bets"""
+    c.execute(query)
+    bets = c.fetchall()
+
+    for i, j in enumerate(bets):
+        print(f"{i}: {j}")
+    
+    to_close = input("Enter bets to delete: ")
+    nums = to_close.split(",")
+    for i in nums:
+        i = i.strip()
+        c.execute(f"""DELETE FROM {remove}_bets WHERE date = ? AND matchup = ? AND odds = ?""", 
+        (bets[0][6], bets[0][1], bets[0][3]))
+    
+    print(f"Removed: {to_close}")
+
+    conn.commit()
+    conn.close()
 
 def custom_search():
 
@@ -235,12 +269,11 @@ def custom_search():
 def main():
 
     todo = input("Todo: ")
-    if todo == "new":
+    if todo == "open":
         new_bet();
     elif todo ==  "close":
         close_bet()
     elif todo == "view":
-
         open_close = input("open or closed: ")
         if open_close == "open":
             view_open_bets()
@@ -248,6 +281,12 @@ def main():
             view_closed_bets()
     elif todo == "search":
         custom_search()
+    
+    elif todo == "delete":
+        delete_bet()
+
+    elif todo == "q":
+        return
     
     else:  # not an option, try again
         main()
