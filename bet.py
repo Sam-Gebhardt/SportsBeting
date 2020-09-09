@@ -230,12 +230,29 @@ def custom_search():
     conn.close()
 
 
-custom_search()
+# custom_search()
+
 def main():
 
-    return
+    todo = input("Todo: ")
+    if todo == "new":
+        new_bet();
+    elif todo ==  "close":
+        close_bet()
+    elif todo == "view":
+
+        open_close = input("open or closed: ")
+        if open_close == "open":
+            view_open_bets()
+        else:
+            view_closed_bets()
+    elif todo == "search":
+        custom_search()
+    
+    else:  # not an option, try again
+        main()
 
 
 if __name__ == "__main__":
     main()
-#
+# main
