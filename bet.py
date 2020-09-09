@@ -167,6 +167,10 @@ def view_closed_bets():
     conn.commit()
     conn.close()
 
+    print("")
+
+    main()
+
 
 def close_bet():
     """Move an open bet to closed_bet table"""
@@ -242,6 +246,9 @@ def delete_bet():
     conn.commit()
     conn.close()
 
+    print("")
+    main()
+
 def custom_search():
 
     conn = sqlite3.connect('bets.db')
@@ -262,6 +269,9 @@ def custom_search():
     
     conn.commit()
     conn.close()
+
+    print("")
+    main()
 
 
 # custom_search()
@@ -287,7 +297,7 @@ def main():
 
     elif todo == "q":
         return
-    
+
     else:  # not an option, try again
         main()
 
