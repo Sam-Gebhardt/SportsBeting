@@ -53,6 +53,21 @@ If I bet on the spread:
 spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 """
 
+
+def bankroll_amount():
+    """Return the amount of money in bankroll"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Master", ))
+    bank = c.fetchall()[0][0]
+
+    conn.commit()
+    conn.close()
+
+    return bank
+
 def bankroll_history(master_amount: int, c, conn):
     """Keeps track of the changes in bankroll over time"""
 
@@ -93,14 +108,16 @@ def bankroll_add(amount: int):
     c = conn.cursor() 
 
     c.execute("""SELECT * FROM bankroll""")
-    bank = c.fetchall()[0][0]
+    bank = c.fetchall()[0][1]
 
     bank += amount
-    bankroll_history(bank)
+    bankroll_history(bank, c, conn)
     # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ?""", (bank, "Master" ))
     
     conn.commit()
     conn.close()
+
+    return bank
 
 
 def new_bet():
@@ -168,7 +185,6 @@ def view_closed_bets():
     conn.close()
 
     print("")
-
     main()
 
 
@@ -212,11 +228,12 @@ def close_bet():
 
         # c.execute("""DELETE)
 
-        print(f"Bet #{j} closed\n")
+        print(f"Bet #{j} closed")
        
     conn.commit()
     conn.close()
 
+    print("")
     main()
 
 
@@ -281,19 +298,34 @@ def main():
     todo = input("Todo: ")
     if todo == "open":
         new_bet();
+
     elif todo ==  "close":
         close_bet()
+
     elif todo == "view":
         open_close = input("open or closed: ")
         if open_close == "open":
             view_open_bets()
         else:
             view_closed_bets()
+
     elif todo == "search":
         custom_search()
     
     elif todo == "delete":
         delete_bet()
+
+    elif todo == "bank":
+        choice = input("Add or view: ")
+        if choice == "view":
+            print(bankroll_amount())
+        else:
+            total = bankroll_add(int(input("Amount: ")))
+            print(f"New Bankroll: {total}")
+
+        print("")
+
+        main()
 
     elif todo == "q":
         return
