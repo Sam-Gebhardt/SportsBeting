@@ -14,11 +14,20 @@ if not path.isfile("bets.db"):
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    c.execute("""CREATE TABLE IF NOT EXISTS open_bets (type text, matchup text, bet_on text, odds text, 
+    c.execute("""CREATE TABLE IF NOT EXISTS open_bets (sport text, type text, matchup text, bet_on text, odds text, 
                 wager real, to_win real, date text)""")
         
-    c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (type text, matchup text, bet_on text, odds text, 
+    c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (sport texttype text, matchup text, bet_on text, odds text, 
                 wager real, to_win real, outcome text, change real, date text)""")
+
+    c.execute("""CREATE TABLE IF NOT EXISTS open_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
+                bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
+                 to_win real, date text)""")
+    
+    c.execute("""CREATE TABLE IF NOT EXISTS closed_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
+            bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
+                to_win real, change real, date text)""")
+                # only supports 10 team parley
 
     c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount real)""")
 
@@ -167,6 +176,12 @@ def view_open_bets():
     for i in open_bets:
         print(i)
 
+    c.execute("""SELECT * FROM open_parley""")
+    open_p = c.fetchall()
+
+    for i in open_p:
+        print(i)
+
     conn.commit()
     conn.close()
 
@@ -177,9 +192,15 @@ def view_closed_bets():
     c = conn.cursor() 
 
     c.execute("""SELECT * FROM closed_bets""")
-    open_bets = c.fetchall()
+    closed_bets = c.fetchall()
 
-    for i in open_bets:
+    for i in closed_bets:
+        print(i)
+
+    c.execute("""SELECT * FROM closed_parley""")
+    closed_p = c.fetchall()
+
+    for i in closed_p:
         print(i)
 
     conn.commit()
