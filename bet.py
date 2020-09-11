@@ -130,6 +130,19 @@ def bankroll_add(amount: int):
     return bank
 
 
+def calc_odds(odds: int, wager: int):
+    """Turn American odds into $$"""
+
+    if odds >= 100:
+        to_win = wager * (odds / 100)
+    else:
+        to_win = (wager / abs(odds)) * 100
+
+    to_win = round(to_win, 2)
+    return to_win
+
+
+
 def new_bet():
     """Get info for new bets"""
     
@@ -145,12 +158,7 @@ def new_bet():
     odds = float(odds)
     wager = float(wager)
 
-    if odds >= 100:
-        to_win = wager * (odds / 100)
-    else:
-        to_win = (wager / abs(odds)) * 100
-
-    to_win = round(to_win, 2)
+    to_win = calc_odds(odds, wager)
     when = date.today()
     if bankroll_remove(wager):
 
@@ -254,6 +262,35 @@ def close_bet():
     conn.close()
 
 
+def open_parley():
+    """Open a parley bet"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    n = input("How many bets in the parley: ")
+    bets = []
+    for i in range(1, int(n) + 1):
+        bets.append(input(f"Bet #{i}: "))
+
+    for i in range(10):
+        if i + 1 > len(bets):
+            bets.append("NULL")
+
+    sport = input("Sport: ")
+    odds = input("Odds: ")
+    wager = input("Wager: ")
+
+    to_win = calc_odds(int(odds), float(wager))
+
+    c.execute("""INSERT INTO open_parley (sport, bet1, bet2, bet3, bet4, bet5, bet6, bet7, bet8, bet9, bet10, 
+    wager, odds, to_win, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (sport, bets[0], bets[1],
+    bets[2], bets[3], bets[4], bets[5], bets[6], bets[7], bets[8], bets[9], wager, odds, to_win, date.today(), ))
+
+    conn.commit()
+    conn.close()
+
+
 def delete_bet():
     """Delete a bet"""
 
@@ -336,6 +373,9 @@ def main():
     elif todo == "q":
         return
 
+    elif todo == "parley":
+        open_parley()
+
     else:  # not an option, try again
         main()
 
@@ -345,4 +385,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-# main
