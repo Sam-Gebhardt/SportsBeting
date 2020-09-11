@@ -15,12 +15,12 @@ if not path.isfile("bets.db"):
     c = conn.cursor()
 
     c.execute("""CREATE TABLE IF NOT EXISTS open_bets (type text, matchup text, bet_on text, odds text, 
-                wager int, to_win int, date text)""")
+                wager real, to_win real, date text)""")
         
     c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (type text, matchup text, bet_on text, odds text, 
-                wager int, to_win int, outcome text, change int, date text)""")
+                wager real, to_win real, outcome text, change real, date text)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount int)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount real)""")
 
     bank = input("Enter starting bankroll: ")
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
@@ -77,9 +77,10 @@ def bankroll_history(master_amount: int, c, conn):
 
     if len(bank) == 0:
         c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), master_amount))
-        return
-    
-    c.execute("""UPDATE bankroll set amount = ? WHERE date = ?""", (master_amount, "Master"))
+    else:
+        c.execute("""UPDATE bankroll SET amount = ? WHERE date = ?""", (master_amount, date.today()))
+        
+    c.execute("""UPDATE bankroll SET amount = ? WHERE date = ?""", (master_amount, "Master"))
 
 
 
@@ -132,8 +133,8 @@ def new_bet():
     odds = input("Odds: ")
     wager = input("Wager: ")
 
-    odds = int(odds)
-    wager = int(wager)
+    odds = float(odds)
+    wager = float(wager)
 
     if odds >= 100:
         to_win = wager * (odds / 100)
@@ -204,7 +205,7 @@ def close_bet():
 
     for j in close:
         try:
-            j = int(j)
+            j = float(j)
         except ValueError:
             continue
 
@@ -227,6 +228,7 @@ def close_bet():
         open_bets[j][4], open_bets[j][5], outcome, change, open_bets[j][6]))
 
         # c.execute("""DELETE)
+        bankroll_add(change)
 
         print(f"Bet #{j} closed")
        
