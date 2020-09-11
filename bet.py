@@ -206,9 +206,6 @@ def view_closed_bets():
     conn.commit()
     conn.close()
 
-    print("")
-    main()
-
 
 def close_bet():
     """Move an open bet to closed_bet table"""
@@ -256,9 +253,6 @@ def close_bet():
     conn.commit()
     conn.close()
 
-    print("")
-    main()
-
 
 def delete_bet():
     """Delete a bet"""
@@ -286,8 +280,6 @@ def delete_bet():
     conn.commit()
     conn.close()
 
-    print("")
-    main()
 
 def custom_search():
 
@@ -310,11 +302,6 @@ def custom_search():
     conn.commit()
     conn.close()
 
-    print("")
-    main()
-
-
-# custom_search()
 
 def main():
 
@@ -346,15 +333,14 @@ def main():
             total = bankroll_add(int(input("Amount: ")))
             print(f"New Bankroll: {total}")
 
-        print("")
-
-        main()
-
     elif todo == "q":
         return
 
     else:  # not an option, try again
         main()
+
+    print("")
+    main()
 
 
 if __name__ == "__main__":
