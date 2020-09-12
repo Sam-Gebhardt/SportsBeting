@@ -149,6 +149,7 @@ def new_bet():
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()   
 
+    sport = input("Which sport: ")
     matchup = input("Which teams are playing: ")
     type_ = input("What type of bet is it: ")
     bet_on = input("What did you bet on: ")
@@ -162,8 +163,8 @@ def new_bet():
     when = date.today()
     if bankroll_remove(wager):
 
-        c.execute("""INSERT INTO open_bets (type, matchup, bet_on, odds, wager, to_win, date) VALUES
-        (?, ?, ?, ?, ?, ?, ?) """, (type_, matchup, bet_on, odds, wager, to_win, when))
+        c.execute("""INSERT INTO open_bets (sport, type, matchup, bet_on, odds, wager, to_win, date) VALUES
+        (?, ?, ?, ?, ?, ?, ?) """, (sport, type_, matchup, bet_on, odds, wager, to_win, when))
     
     conn.commit()
     conn.close()
@@ -231,7 +232,7 @@ def close_bet():
 
     for j in close:
         try:
-            j = float(j)
+            j = int(j)
         except ValueError:
             continue
 
@@ -248,12 +249,14 @@ def close_bet():
             change = open_bets[j][4] + open_bets[j][5]
             # change = wager + to_win
         
-        c.execute("""INSERT INTO closed_bets (type, matchup, bet_on, odds, wager, 
+        c.execute("""INSERT INTO closed_bets (sport, type, matchup, bet_on, odds, wager, 
         to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""" ,
         (open_bets[j][0], open_bets[j][1], open_bets[j][2], open_bets[j][3], 
-        open_bets[j][4], open_bets[j][5], outcome, change, open_bets[j][6]))
+        open_bets[j][4], open_bets[j][5], open_bets[j][6], outcome, change, open_bets[j][6], ))
 
-        # c.execute("""DELETE)
+        c.execute("""DELETE FROM open_bets WHERE sport = ? AND matchup = ? AND bet_on = ?""",
+                    (open_bets[j][0], open_bets[j][2], open_bets[j][3]))
+
         bankroll_add(change)
 
         print(f"Bet #{j} closed")
@@ -289,6 +292,22 @@ def open_parley():
 
     conn.commit()
     conn.close()
+
+
+def close_parley():
+    """Close a parley bet"""
+
+    c.execute("""SELECT * FROM open_parley""")
+    par = c.fetchall()
+
+    cleansed = []
+    for bet in par:
+        new = []
+        for item in bet:
+            if item != "NULL":
+                new.append(item)
+        cleansed.append(new)
+
 
 
 def delete_bet():
