@@ -34,7 +34,7 @@ if not path.isfile("bets.db"):
     bank = input("Enter starting bankroll: ")
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
-    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Starting", bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Starting", 0))
 
     conn.commit()
     conn.close()
@@ -100,7 +100,7 @@ def bankroll_history(master_amount: int):
     conn.close()
 
 
-def bankroll_remove(amount: int):
+def bankroll_update(amount: int, change: int, add=False):
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor() 
@@ -108,12 +108,17 @@ def bankroll_remove(amount: int):
     c.execute("""SELECT * FROM bankroll WHERE date = ?""", ("Master", ))
     bank = c.fetchall()[0][1]
 
-    c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (amount, "Starting"))
+    if not add:
+        bank -= change
+        c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (change, "Starting"))
+
+    else:
+        bank += change
+        c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (change, "Starting"))
 
     conn.commit()
     conn.close()
 
-    bank -= amount
     if bank < 0:
         print("Your bet is more than bankroll. Aborting")
         return False
@@ -122,25 +127,6 @@ def bankroll_remove(amount: int):
     # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ? """, (bank, "Master"))
 
     return True
-
-def bankroll_add(amount: int):
-
-    conn = sqlite3.connect('bets.db')
-    c = conn.cursor() 
-
-    c.execute("""SELECT * FROM bankroll""")
-    bank = c.fetchall()[0][1]
-
-    c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (amount, "Starting"))
-
-    conn.commit()
-    conn.close()
-
-    bank += amount
-    bankroll_history(bank)
-    # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ?""", (bank, "Master" ))
-
-    return bank
 
 
 def calc_odds(odds: int, wager: int):
@@ -174,7 +160,7 @@ def new_bet():
 
     to_win = calc_odds(odds, wager)
     when = date.today()
-    if bankroll_remove(wager):
+    if bankroll_update(wager, 0):
 
         c.execute("""INSERT INTO open_bets (sport, type, matchup, bet_on, odds, wager, to_win, date) VALUES
         (?, ?, ?, ?, ?, ?, ?, ?) """, (sport, type_, matchup, bet_on, odds, wager, to_win, when))
@@ -251,23 +237,27 @@ def close_bet():
             if outcome == "w" or outcome == "l":
                 break
         
-        change = 0
+        amount = 0
         # default is 0 because wager is already removed from bank roll
         if outcome == "w":
-            change = float(open_bets[j][4]) + float(open_bets[j][5])
-            # change = wager + to_win
+            amount = float(open_bets[j][4]) + float(open_bets[j][5])
+            amount = round(amount, 2)
+            # amount = wager + to_win
         
         c.execute("""INSERT INTO closed_bets (sport, type, matchup, bet_on, odds, wager, 
         to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""" ,
         (open_bets[j][0], open_bets[j][1], open_bets[j][2], open_bets[j][3],  open_bets[j][4], 
-        open_bets[j][5], open_bets[j][6], outcome, change, open_bets[j][7], ))
+        open_bets[j][5], open_bets[j][6], outcome, amount, open_bets[j][7], ))
 
         c.execute("""DELETE FROM open_bets WHERE sport = ? AND matchup = ? AND bet_on = ?""",
                     (open_bets[j][0], open_bets[j][2], open_bets[j][3]))
         
         conn.commit()
+        if outcome == "w":  # if won, then add to_win else subtract wager
+            bankroll_update(amount, open_bets[j][6], add=True)
+        else:
+            bankroll_update(amount, open_bets[j][5])
 
-        bankroll_add(change)
 
         print(f"Bet #{j} closed")
        
@@ -399,8 +389,9 @@ def main():
         if choice == "view":
             print(f"Current: {bankroll_amount()[0]}\nChange: {bankroll_amount()[1]}")
         else:
-            total = bankroll_add(int(input("Amount: ")))
-            print(f"New Bankroll: {total}")
+            n = int(input("Amount: "))
+            bankroll_update(n, n, add=True)
+            print(f"New Bankroll: {bankroll_amount()[0]}")
 
     elif todo == "q":
         return
