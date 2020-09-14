@@ -34,6 +34,7 @@ if not path.isfile("bets.db"):
     bank = input("Enter starting bankroll: ")
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Starting", bank))
 
     conn.commit()
     conn.close()
@@ -66,14 +67,18 @@ spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 def bankroll_amount():
     """Return the amount of money in bankroll"""
 
-    conn = sqlite3
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor() 
 
     c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Master", ))
-    bank = c.fetchall()[0][0]
+    current = c.fetchall()[0][0]
+
+    c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Starting", ))
+    change = c.fetchall()[0][0]
 
     conn.close()
 
-    return bank
+    return current, change
 
 def bankroll_history(master_amount: int):
     """Keeps track of the changes in bankroll over time"""
@@ -103,6 +108,9 @@ def bankroll_remove(amount: int):
     c.execute("""SELECT * FROM bankroll WHERE date = ?""", ("Master", ))
     bank = c.fetchall()[0][1]
 
+    c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (amount, "Starting"))
+
+    conn.commit()
     conn.close()
 
     bank -= amount
@@ -112,7 +120,6 @@ def bankroll_remove(amount: int):
 
     bankroll_history(bank)
     # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ? """, (bank, "Master"))
-
 
     return True
 
@@ -124,6 +131,9 @@ def bankroll_add(amount: int):
     c.execute("""SELECT * FROM bankroll""")
     bank = c.fetchall()[0][1]
 
+    c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (amount, "Starting"))
+
+    conn.commit()
     conn.close()
 
     bank += amount
@@ -387,7 +397,7 @@ def main():
     elif todo == "bank":
         choice = input("Add or view: ")
         if choice == "view":
-            print(bankroll_amount())
+            print(f"Current: {bankroll_amount()[0]}\nChange: {bankroll_amount()[1]}")
         else:
             total = bankroll_add(int(input("Amount: ")))
             print(f"New Bankroll: {total}")
