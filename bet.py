@@ -78,6 +78,11 @@ def bankroll_amount():
     c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Starting",))
     change = c.fetchall()[0][0]
 
+    # c.execute("""SELECT SUM(wager) FROM open_bets""")
+    # open_sum = c.fetchall()[0][0]
+    # if open_sum:
+        # change += open_sum
+
     conn.close()
 
     return current, change
@@ -103,7 +108,7 @@ def bankroll_history(master_amount: int):
     conn.close()
 
 
-def bankroll_update(change: float, add=False):
+def bankroll_update(change: float, wager=0, add=False):
     """Add or subtract from bankroll"""
 
     conn = sqlite3.connect('bets.db')
@@ -113,24 +118,16 @@ def bankroll_update(change: float, add=False):
     bank = c.fetchall()[0][1]
 
     if not add:
-        bank -= change
         c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (change, "Starting"))
 
     else:
-        bank += change
+        bank += change + wager
         c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (change, "Starting"))
 
-    conn.commit()
+    conn.commit()  # todo add orignal wager, money won as args
     conn.close()
 
-    if bank < 0:
-        print("Your bet is more than bankroll. Aborting")
-        return False
-
     bankroll_history(bank)
-    # c.execute("""UPDATE bankroll SET amount = ? WHERE date = ? """, (bank, "Master"))
-
-    return True
 
 
 def calc_odds(odds: int, wager: float):
@@ -155,17 +152,26 @@ def new_bet():
     matchup = input("Which teams are playing: ")
     type_ = input("What type of bet is it: ")
     bet_on = input("What did you bet on: ")
-    odds = input("Odds: ")
     wager = input("Wager: ")
+    odds = input("Odds: ")
 
     odds = int(odds)
     wager = float(wager)
 
     to_win = calc_odds(odds, wager)
     when = date.today()
-    if bankroll_update(wager):
-        c.execute("""INSERT INTO open_bets (sport, type, matchup, bet_on, odds, wager, to_win, date) VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?) """, (sport, type_, matchup, bet_on, odds, wager, to_win, when))
+
+    c.execute("""SELECT amount FROM bankroll WHERE date = ?""", ("Master", ))
+    bankroll = c.fetchall()[0][0]
+
+    if (bankroll - wager) < 0:
+        print("The bet is more than the bankroll. Aborting")
+        return
+
+    c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (wager, "Master", ))
+
+    c.execute("""INSERT INTO open_bets (sport, type, matchup, bet_on, odds, wager, to_win, date) VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?) """, (sport, type_, matchup, bet_on, odds, wager, to_win, when))
 
     conn.commit()
     conn.close()
@@ -255,7 +261,7 @@ def close_bet():
 
         conn.commit()
         if outcome == "w":  # if won, then add to_win else subtract wager
-            bankroll_update(open_bets[j][6], add=True)
+            bankroll_update(open_bets[j][6], wager=open_bets[j][5], add=True)
         else:
             bankroll_update(open_bets[j][5])
 
@@ -366,8 +372,6 @@ def custom_search():
 
 def main():
 
-    initialize()
-
     todo = input("Todo: ")
     if todo == "open":
         new_bet()
@@ -408,4 +412,9 @@ def main():
 
 
 if __name__ == "__main__":
+    initialize()
     main()
+
+
+# todo close/w: bank is correct, but change stays the same
+# todo close/l: bank stays the same, but change decrease by the wager * 2
