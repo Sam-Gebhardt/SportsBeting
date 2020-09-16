@@ -142,7 +142,16 @@ def calc_odds(odds: int, wager: float) -> float:
     return to_win
 
 
-# def implied_prob(odds: int) -> float:
+def implied_prob(odds: int) -> float:
+    """Turn odds into the applied probability of the event occurring"""
+
+    if odds < 0:
+        odds = abs(odds)
+        prob = (odds / (odds + 100)) * 100
+    else:
+        prob = (100 / (odds + 100)) * 100
+
+    return prob
 
 
 def new_bet():
