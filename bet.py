@@ -81,7 +81,7 @@ def bankroll_amount():
     # c.execute("""SELECT SUM(wager) FROM open_bets""")
     # open_sum = c.fetchall()[0][0]
     # if open_sum:
-        # change += open_sum
+    # change += open_sum
 
     conn.close()
 
@@ -124,13 +124,13 @@ def bankroll_update(change: float, wager=0, add=False):
         bank += change + wager
         c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (change, "Starting"))
 
-    conn.commit()  # todo add orignal wager, money won as args
+    conn.commit()
     conn.close()
 
     bankroll_history(bank)
 
 
-def calc_odds(odds: int, wager: float):
+def calc_odds(odds: int, wager: float) -> float:
     """Turn American odds into $$"""
 
     if odds >= 100:
@@ -140,6 +140,9 @@ def calc_odds(odds: int, wager: float):
 
     to_win = round(to_win, 2)
     return to_win
+
+
+# def implied_prob(odds: int) -> float:
 
 
 def new_bet():
@@ -240,12 +243,12 @@ def close_bet():
         while True:
 
             outcome = input(f"W/L bet #{j}: ")
-            outcome.lower()
+            outcome = outcome.lower()
             if outcome == "w" or outcome == "l":
                 break
 
-        amount = 0
-        # default is 0 because wager is already removed from bank roll
+        amount = open_bets[j][4] * -1
+        # lost on the bet == wager
         if outcome == "w":
             amount = float(open_bets[j][4]) + float(open_bets[j][5])
             amount = round(amount, 2)
@@ -418,3 +421,27 @@ if __name__ == "__main__":
 
 # todo close/w: bank is correct, but change stays the same
 # todo close/l: bank stays the same, but change decrease by the wager * 2
+
+"""
+10 +120 | 12
+4 -200  | 2
+7 +100  | 7
+5 +200  | 10
+100 -115 | 86.96
+2 -110 | 1.82
+
+128 +119 | 119.956521739
+21.33 xxx |
+-105 
+121.90476190
+0.937160326
+
+.94 = 100 
+        x
+        
+        106
+
+
+
+
+"""
