@@ -5,6 +5,12 @@ def out():
     print("Testing")
 
 
+def confirm(data: dict):
+    """Store given data in the db"""
+    for i in data:
+        print(data.get(i).get())
+
+
 class App(tk.Frame):
 
     def __init__(self, master=None):
@@ -12,12 +18,12 @@ class App(tk.Frame):
         self.master = master
         self.pack()
         self.logo()
-        # self.master.after(3000, self.start_page())
         self.menu()
         self.start_page()
+        self.input_box()
 
     def start_page(self):
-        btn = tk.Button(root, text='Click me !', bd='5', command=self.master.destroy)
+        btn = tk.Button(self.master, text='Close', bd='5', command=self.master.destroy)
         btn.pack()
 
     def menu(self):
@@ -55,6 +61,20 @@ class App(tk.Frame):
         label.image = img  # must keep a reference of the image
         label.pack()
         canvas.create_image(20, 20, anchor="nw", image=img)
+
+    def input_box(self):
+
+        data = {}
+        label = tk.Label(self.master, text="Sport")
+        # label.grid(row=0, column=0)
+        sport = tk.StringVar()
+        sport_input = tk.Entry(self.master, width=5, textvariable=sport)
+        # sport_input.grid(column=0, row=1)
+        data["Sport"] = sport
+        sport_input.pack()
+        label.pack()
+        button = tk.Button(self.master, text="Confirm", command=lambda: confirm(data))
+        button.pack()
 
 
 if __name__ == "__main__":
