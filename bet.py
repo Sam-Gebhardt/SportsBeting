@@ -151,7 +151,18 @@ def implied_prob(odds: int) -> float:
     else:
         prob = (100 / (odds + 100)) * 100
 
-    return prob
+    return round(prob, 2)
+
+
+def covert_decimal(odds: int) -> float:
+    """Covert american odds to decimal """
+
+    if odds > 0:
+        decimal = odds / 100
+    else:
+        decimal = 100 / abs(odds)
+
+    return decimal
 
 
 def new_bet():
@@ -426,31 +437,3 @@ def main():
 if __name__ == "__main__":
     initialize()
     main()
-
-
-# todo close/w: bank is correct, but change stays the same
-# todo close/l: bank stays the same, but change decrease by the wager * 2
-
-"""
-10 +120 | 12
-4 -200  | 2
-7 +100  | 7
-5 +200  | 10
-100 -115 | 86.96
-2 -110 | 1.82
-
-128 +119 | 119.956521739
-21.33 xxx |
--105 
-121.90476190
-0.937160326
-
-.94 = 100 
-        x
-        
-        106
-
-
-
-
-"""
