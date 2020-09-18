@@ -16,15 +16,14 @@ class App(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.pack()
-        self.logo()
+        # self.logo()
         self.menu()
         self.start_page()
         self.input_box()
 
     def start_page(self):
         btn = tk.Button(self.master, text='Close', bd='5', command=self.master.destroy)
-        btn.pack()
+        btn.grid(row=1, column=0)
 
     def menu(self):
         menu_bar = tk.Menu(self.master)
@@ -59,26 +58,27 @@ class App(tk.Frame):
         img = tk.PhotoImage(file="m1.png")
         label = tk.Label(image=img)
         label.image = img  # must keep a reference of the image
-        label.pack()
+        label.grid()
         canvas.create_image(20, 20, anchor="nw", image=img)
 
     def input_box(self):
 
         data = {}
-        label = tk.Label(self.master, text="Sport")
-        # label.grid(row=0, column=0)
+        label_sport = tk.Label(self.master, text="Sport")
+        # label_type = tl.Label
         sport = tk.StringVar()
         sport_input = tk.Entry(self.master, width=5, textvariable=sport)
-        # sport_input.grid(column=0, row=1)
         data["Sport"] = sport
-        sport_input.pack()
-        label.pack()
+
+        sport_input.grid(row=2, column=2)
+        label_sport.grid(row=2, column=1)
         button = tk.Button(self.master, text="Confirm", command=lambda: confirm(data))
-        button.pack()
+        button.grid(row=5, column=1)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(master=root)
     root.title("Bet Tracker")
+    root.geometry("1000x500")
     app.mainloop()
