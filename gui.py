@@ -23,7 +23,7 @@ class App(tk.Frame):
 
     def start_page(self):
         btn = tk.Button(self.master, text='Close', bd='5', command=self.master.destroy)
-        btn.grid(row=1, column=0)
+        btn.grid(row=10, column=100)
 
     def menu(self):
         menu_bar = tk.Menu(self.master)
@@ -65,15 +65,53 @@ class App(tk.Frame):
 
         data = {}
         label_sport = tk.Label(self.master, text="Sport")
-        # label_type = tl.Label
-        sport = tk.StringVar()
-        sport_input = tk.Entry(self.master, width=5, textvariable=sport)
-        data["Sport"] = sport
+        label_type = tk.Label(self.master, text="Type")
+        label_matchup = tk.Label(self.master, text="Matchup")
+        label_bet_on = tk.Label(self.master, text="Bet")
+        label_odds = tk.Label(self.master, text="Odds")
+        label_wager = tk.Label(self.master, text="Wager")
 
-        sport_input.grid(row=2, column=2)
-        label_sport.grid(row=2, column=1)
+        sport = tk.StringVar()
+        _type = tk.StringVar()
+        matchup = tk.StringVar()
+        bet_on = tk.StringVar()
+        odds = tk.StringVar()
+        wager = tk.StringVar()
+
+        sport_input = tk.Entry(self.master, width=5, textvariable=sport)
+        _type_input = tk.Entry(self.master, width=5, textvariable=_type)
+        match_input = tk.Entry(self.master, width=5, textvariable=matchup)
+        bet_on_input = tk.Entry(self.master, width=5, textvariable=bet_on)
+        odds_input = tk.Entry(self.master, width=5, textvariable=odds)
+        wager_input = tk.Entry(self.master, width=5, textvariable=wager)
+
+        data["Sport"] = sport
+        data["Type"] = _type
+        data["Matchup"] = matchup
+        data["Bet"] = bet_on
+        data["Odds"] = odds
+        data["Wager"] = wager
+
+        sport_input.grid(row=1, column=2)
+        label_sport.grid(row=2, column=2)
+
+        _type_input.grid(row=1, column=3)
+        label_type.grid(row=2, column=3)
+
+        match_input.grid(row=1, column=4)
+        label_matchup.grid(row=2, column=4)
+
+        bet_on_input.grid(row=1, column=5)
+        label_bet_on.grid(row=2, column=5)
+
+        odds_input.grid(row=1, column=6)
+        label_odds.grid(row=2, column=6)
+
+        wager_input.grid(row=1, column=7)
+        label_wager.grid(row=2, column=7)
+
         button = tk.Button(self.master, text="Confirm", command=lambda: confirm(data))
-        button.grid(row=5, column=1)
+        button.grid(row=5, column=6)
 
 
 if __name__ == "__main__":
