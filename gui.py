@@ -22,8 +22,8 @@ class App(tk.Frame):
         self.input_box()
 
     def start_page(self):
-        btn = tk.Button(self.master, text='Close', bd='5', command=self.master.destroy)
-        btn.grid(row=10, column=100)
+        btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy)
+        btn.grid(row=3, column=2, pady=10)
 
     def menu(self):
         menu_bar = tk.Menu(self.master)
@@ -78,11 +78,11 @@ class App(tk.Frame):
         odds = tk.StringVar()
         wager = tk.StringVar()
 
-        sport_input = tk.Entry(self.master, width=5, textvariable=sport)
-        _type_input = tk.Entry(self.master, width=5, textvariable=_type)
-        match_input = tk.Entry(self.master, width=5, textvariable=matchup)
-        bet_on_input = tk.Entry(self.master, width=5, textvariable=bet_on)
-        odds_input = tk.Entry(self.master, width=5, textvariable=odds)
+        sport_input = tk.Entry(self.master, width=7, textvariable=sport)
+        _type_input = tk.Entry(self.master, width=7, textvariable=_type)
+        match_input = tk.Entry(self.master, width=20, textvariable=matchup)
+        bet_on_input = tk.Entry(self.master, width=20, textvariable=bet_on)
+        odds_input = tk.Entry(self.master, width=7, textvariable=odds)
         wager_input = tk.Entry(self.master, width=5, textvariable=wager)
 
         data["Sport"] = sport
@@ -101,7 +101,7 @@ class App(tk.Frame):
         match_input.grid(row=1, column=4)
         label_matchup.grid(row=2, column=4)
 
-        bet_on_input.grid(row=1, column=5)
+        bet_on_input.grid(row=1, column=5, pady=30)
         label_bet_on.grid(row=2, column=5)
 
         odds_input.grid(row=1, column=6)
@@ -111,7 +111,7 @@ class App(tk.Frame):
         label_wager.grid(row=2, column=7)
 
         button = tk.Button(self.master, text="Confirm", command=lambda: confirm(data))
-        button.grid(row=5, column=6)
+        button.grid(row=3, column=4, pady=3)
 
 
 if __name__ == "__main__":
