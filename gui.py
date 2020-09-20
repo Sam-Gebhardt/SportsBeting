@@ -74,8 +74,8 @@ class App(tk.Frame):
         menu_bar = tk.Menu(self.master)
 
         _open = tk.Menu(menu_bar, tearoff=0)
-        _open.add_command(label="Bet", command=self.open_bet_menu)
-        _open.add_command(label="Parley", command=self.open_parley_menu)
+        _open.add_command(label="Bet", command=lambda: [self.clear(), self.open_bet_menu()])
+        _open.add_command(label="Parley", command=lambda: [self.clear(), self.open_parley_menu()])
         menu_bar.add_cascade(label="Open", menu=_open)
 
         _close = tk.Menu(menu_bar, tearoff=0)
@@ -190,7 +190,7 @@ class App(tk.Frame):
         self.match_input.grid(row=1, column=4)
         self.label_matchup.grid(row=2, column=4)
 
-        self.odds_input.grid(row=1, column=6)
+        self.odds_input.grid(row=1, column=6, pady=30)
         self.label_odds.grid(row=2, column=6)
 
         self.wager_input.grid(row=1, column=7)
@@ -213,7 +213,8 @@ class App(tk.Frame):
             if inputs:
                 inputs.destroy()
 
-        self.button.destroy()
+        if self.button:
+            self.button.destroy()
         self.data.clear()
 
     def confirm(self):
