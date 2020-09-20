@@ -44,6 +44,7 @@ def initialize():
 """
 Table contents
 
+sport: sport
 type: spread, ml, prop, custom
 matchup: Teams playing
 bet_on: winning outcome
@@ -165,36 +166,26 @@ def covert_decimal(odds: int) -> float:
     return decimal
 
 
-def new_bet():
+def new_bet(data: dict):
     """Get info for new bets"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    sport = input("Which sport: ")
-    matchup = input("Which teams are playing: ")
-    type_ = input("What type of bet is it: ")
-    bet_on = input("What did you bet on: ")
-    wager = input("Wager: ")
-    odds = input("Odds: ")
-
-    odds = int(odds)
-    wager = float(wager)
-
-    to_win = calc_odds(odds, wager)
+    to_win = calc_odds(data["Odds"], data["Wager"])
     when = date.today()
 
     c.execute("""SELECT amount FROM bankroll WHERE date = ?""", ("Master", ))
     bankroll = c.fetchall()[0][0]
 
-    if (bankroll - wager) < 0:
-        print("The bet is more than the bankroll. Aborting")
-        return
+    if (bankroll - data["Wager"]) < 0:
+        return False
 
-    c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (wager, "Master", ))
+    c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (data["Wager"], "Master", ))
 
     c.execute("""INSERT INTO open_bets (sport, type, matchup, bet_on, odds, wager, to_win, date) VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?) """, (sport, type_, matchup, bet_on, odds, wager, to_win, when))
+    (?, ?, ?, ?, ?, ?, ?, ?) """, (data["Sport"], data["Type"], data["Matchup"], data["Bet"], data["Odds"],
+                                   data["Wager"], to_win, when))
 
     conn.commit()
     conn.close()
@@ -393,47 +384,5 @@ def custom_search():
     conn.close()
 
 
-def main():
-
-    todo = input("Todo: ")
-    if todo == "open":
-        new_bet()
-
-    elif todo == "close":
-        close_bet()
-
-    elif todo == "view":
-        open_close = input("open or closed: ")
-        if open_close == "open":
-            view_open_bets()
-        else:
-            view_closed_bets()
-
-    elif todo == "search":
-        custom_search()
-
-    elif todo == "delete":
-        delete_bet()
-
-    elif todo == "bank":
-        choice = input("Add or view: ")
-        if choice == "view":
-            print(f"Current: {bankroll_amount()[0]}\nChange: {bankroll_amount()[1]}")
-        else:
-            n = int(input("Amount: "))
-            bankroll_update(n, add=True)
-            print(f"New Bankroll: {bankroll_amount()[0]}")
-
-    elif todo == "q":
-        return
-
-    elif todo == "parley":
-        open_parley()
-
-    print("")
-    main()
-
-
 if __name__ == "__main__":
     initialize()
-    main()
