@@ -1,8 +1,5 @@
 import tkinter as tk
 
-# todo: make functions for testing, but cut them out and
-#  alter functions in bet.py to take a dict as an arg
-
 
 def out():
     print("Testing")
@@ -11,7 +8,7 @@ def out():
 # def reset_data(data:dict):
 
 
-def confirm(data: dict):
+def open_db(data: dict):
     """Store given data in the db"""
     for i in data:
         data[i] = data[i].get()
@@ -22,9 +19,9 @@ def confirm(data: dict):
         int(data["Odds"])
 
     except ValueError:
-        print("no")
-        # return False
-    # data.clear()
+        return False
+
+    return True
 
 
 def confirm_parley(data: dict):
@@ -61,10 +58,13 @@ class App(tk.Frame):
         self._type_input = None
         self.bet_on_input = None
 
-        # self.logo()
+        self.inputs = []
+        self.labels = []
+
+        self.button = None
+
         self.menu()
         self.start_page()
-        # self.input_box()
 
     def start_page(self):
         btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
@@ -154,8 +154,14 @@ class App(tk.Frame):
         self.wager_input.grid(row=1, column=7)
         self.label_wager.grid(row=2, column=7)
 
-        button = tk.Button(self.master, text="Confirm", command=lambda: confirm(self.data), bd='5', bg="green")
-        button.grid(row=3, column=4, pady=3)
+        self.labels = [self.label_sport, self.label_matchup, self.label_odds,
+                       self.label_wager, self.label_type, self.label_bet_on]
+
+        self.inputs = [self.sport_input, self.match_input, self.odds_input,
+                       self.wager_input, self._type_input, self.bet_on_input]
+
+        self.button = tk.Button(self.master, text="Confirm", command=lambda: self.confirm(), bd='5', bg="green")
+        self.button.grid(row=3, column=4, pady=3)
 
     def open_parley_menu(self):
         self.label_sport = tk.Label(self.master, text="Sport")
@@ -190,11 +196,28 @@ class App(tk.Frame):
         self.wager_input.grid(row=1, column=7)
         self.label_wager.grid(row=2, column=7)
 
-        button = tk.Button(self.master, text="Confirm", command=lambda: confirm_parley(self.data), bd='5', bg="green")
+        self.labels = [self.label_sport, self.label_matchup, self.label_odds, self.label_wager]
+        self.inputs = [self.sport_input, self.match_input, self.odds_input, self.wager_input]
+
+        button = tk.Button(self.master, text="Confirm", command=lambda: self.confirm(), bd='5', bg="green")
         button.grid(row=3, column=4, pady=3)
 
+    def clear(self):
+        """"Destroy old widgets and send data to database"""
+
+        for label in self.labels:
+            if label:
+                label.destroy()
+
+        for inputs in self.inputs:
+            if inputs:
+                inputs.destroy()
+
+        self.button.destroy()
+        self.data.clear()
+
     def confirm(self):
-        """"""
+        self.clear()
 
 
 if __name__ == "__main__":
