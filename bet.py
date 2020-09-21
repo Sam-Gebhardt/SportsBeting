@@ -5,40 +5,36 @@ Items to keep track of: Bet, Odds, Amount, Payout, Outcome
 
 import sqlite3
 from datetime import date
-from os import path
 
 
-def initialize():
-    if not path.isfile("bets.db"):
-        """Check if db exists, creates it if not"""
+def initialize(bank: float):
 
-        conn = sqlite3.connect('bets.db')
-        c = conn.cursor()
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
 
-        c.execute("""CREATE TABLE IF NOT EXISTS open_bets (sport text, type text, matchup text, bet_on text, odds text, 
-                    wager real, to_win real, date text)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS open_bets (sport text, type text, matchup text, bet_on text, odds text, 
+                wager real, to_win real, date text)""")
 
-        c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (sport text, type text, matchup text, bet_on text, 
-                    odds text, wager real, to_win real, outcome text, change real, date text)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (sport text, type text, matchup text, bet_on text, 
+                odds text, wager real, to_win real, outcome text, change real, date text)""")
 
-        c.execute("""CREATE TABLE IF NOT EXISTS open_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
-                    bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
-                     to_win real, date text)""")
-
-        c.execute("""CREATE TABLE IF NOT EXISTS closed_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
+    c.execute("""CREATE TABLE IF NOT EXISTS open_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
                 bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
-                    to_win real, change real, date text)""")
-        # only supports 10 team parley
+                 to_win real, date text)""")
 
-        c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount real)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS closed_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
+            bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
+                to_win real, change real, date text)""")
+    # only supports 10 team parley
 
-        bank = input("Enter starting bankroll: ")
-        c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
-        c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
-        c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Starting", 0))
+    c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount real)""")
 
-        conn.commit()
-        conn.close()
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Starting", 0))
+
+    conn.commit()
+    conn.close()
 
 
 """
@@ -284,33 +280,23 @@ def close_bet():
     conn.close()
 
 
-def open_parley():
+def open_parley(data: dict):
     """Open a parley bet"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    n = input("How many bets in the parley: ")
-    bets = []
-    for i in range(1, int(n) + 1):
-        bets.append(input(f"Bet #{i}: "))
+    for i in range(1, 11):
+        bet_str = f"bet{i}"
+        data.setdefault(bet_str, "NULL")
 
-    for i in range(10):
-        if i + 1 > len(bets):
-            bets.append("NULL")
-
-    sport = input("Sport: ")
-    odds = input("Odds: ")
-    wager = input("Wager: ")
-
-    to_win = calc_odds(int(odds), float(wager))
+    to_win = calc_odds(int(data["Odds"]), float(data["Wager"]))
 
     c.execute("""INSERT INTO open_parley (sport, bet1, bet2, bet3, bet4, bet5, bet6, bet7, bet8, bet9, bet10, 
-    wager, odds, to_win, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (sport, bets[0], bets[1],
-                                                                                         bets[2], bets[3], bets[4],
-                                                                                         bets[5], bets[6], bets[7],
-                                                                                         bets[8], bets[9], wager, odds,
-                                                                                         to_win, date.today(),))
+               wager, odds, to_win, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+              (data["Sport"], data["bet1"], data["bet2"], data["bet3"], data["bet4"], data["bet5"], data["bet6"],
+               data["bet7"], data["bet8"], data["bet9"], data["bet10"], data["Wager"], data["Odds"],
+               to_win, date.today(),))
 
     conn.commit()
     conn.close()
@@ -382,7 +368,3 @@ def custom_search():
         print(bet)
 
     conn.close()
-
-
-if __name__ == "__main__":
-    initialize()
