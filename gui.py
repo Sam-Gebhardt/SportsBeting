@@ -1,22 +1,20 @@
 import tkinter as tk
+import bet as db
+from os import path
 
 
 def out():
     print("Testing")
 
 
-# def reset_data(data:dict):
-
-
-def open_db(data: dict):
-    """Store given data in the db"""
+def type_safety(data: dict) -> bool:
+    """Make sure each input is the correct type"""
     for i in data:
         data[i] = data[i].get()
-        print(data[i])
 
     try:
-        int(data["Wager"])
-        int(data["Odds"])
+        data["Wager"] = int(data["Wager"])
+        data["Odds"] = int(data["Odds"])
 
     except ValueError:
         return False
@@ -24,17 +22,13 @@ def open_db(data: dict):
     return True
 
 
-def confirm_parley(data: dict):
+def separate_parley(data: dict):
 
-    for i in data:
-        if i == "Matchup":
-            separated = data.get(i).get().split(";")
-            for j in separated:
-                j = j.strip()
-                if j:
-                    print(j)
-        else:
-            print(data.get(i).get())
+    bets = data["Matchup"].split(",")
+    for i in range(len(bets)):
+        bets[i] = bets[i].strip()
+        key = f"bet{i + 1}"
+        data[key] = bets[i]
 
 
 class App(tk.Frame):
@@ -65,6 +59,9 @@ class App(tk.Frame):
 
         self.menu()
         self.start_page()
+
+        if not path.isfile("bets.db"):
+            db.initialize(0)
 
     def start_page(self):
         btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
@@ -160,12 +157,13 @@ class App(tk.Frame):
         self.inputs = [self.sport_input, self.match_input, self.odds_input,
                        self.wager_input, self._type_input, self.bet_on_input]
 
-        self.button = tk.Button(self.master, text="Confirm", command=lambda: self.confirm(), bd='5', bg="green")
+        self.button = tk.Button(self.master, text="Confirm",
+                                command=lambda: self.confirm(_type="bet"), bd='5', bg="green")
         self.button.grid(row=3, column=4, pady=3)
 
     def open_parley_menu(self):
         self.label_sport = tk.Label(self.master, text="Sport")
-        self.label_matchup = tk.Label(self.master, text="Matchup(s) separated by a ';'")
+        self.label_matchup = tk.Label(self.master, text="Matchup(s) separated by a ','")
         self.label_odds = tk.Label(self.master, text="Odds")
         self.label_wager = tk.Label(self.master, text="Wager")
 
@@ -199,8 +197,9 @@ class App(tk.Frame):
         self.labels = [self.label_sport, self.label_matchup, self.label_odds, self.label_wager]
         self.inputs = [self.sport_input, self.match_input, self.odds_input, self.wager_input]
 
-        button = tk.Button(self.master, text="Confirm", command=lambda: self.confirm(), bd='5', bg="green")
-        button.grid(row=3, column=4, pady=3)
+        self.button = tk.Button(self.master, text="Confirm", command=lambda:
+                                self.confirm(_type="parley"), bd='5', bg="green")
+        self.button.grid(row=3, column=4, pady=3)
 
     def clear(self):
         """"Destroy old widgets and send data to database"""
@@ -217,7 +216,17 @@ class App(tk.Frame):
             self.button.destroy()
         self.data.clear()
 
-    def confirm(self):
+    def confirm(self, _type=None):
+
+        if not type_safety(self.data):
+            pass  # todo Error handling
+
+        if _type == "bet":
+            db.new_bet(self.data)
+        elif _type == "parley":
+            separate_parley(self.data)
+            db.open_parley()
+
         self.clear()
 
 
