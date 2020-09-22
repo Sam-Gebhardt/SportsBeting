@@ -65,6 +65,7 @@ class App(tk.Frame):
 
         self.error_msg = None  # Error if wager/odds != int
         self.view_labels = []  # labels for viewing bets
+        self.menu_bar = None  # menu bar
 
         self.menu()
         # self.exit_button()
@@ -79,30 +80,40 @@ class App(tk.Frame):
         btn.grid(row=3, column=0, pady=10)
 
     def menu(self):
-        menu_bar = tk.Menu(self.master)
+        self.menu_bar = tk.Menu(self.master)
 
-        _open = tk.Menu(menu_bar, tearoff=0)
+        _open = tk.Menu(self.menu_bar, tearoff=0)
         _open.add_command(label="Bet", command=lambda: [self.clear(), self.open_bet_menu()])
         _open.add_command(label="Parley", command=lambda: [self.clear(), self.open_parley_menu()])
-        menu_bar.add_cascade(label="Open", menu=_open)
+        self.menu_bar.add_cascade(label="Open", menu=_open)
 
-        _close = tk.Menu(menu_bar, tearoff=0)
+        _close = tk.Menu(self.menu_bar, tearoff=0)
         _close.add_command(label="Bet")
         _close.add_command(label="Parley")
-        menu_bar.add_cascade(label="Close", menu=_close)
+        self.menu_bar.add_cascade(label="Close", menu=_close)
 
-        view = tk.Menu(menu_bar, tearoff=0)
+        view = tk.Menu(self.menu_bar, tearoff=0)
         view.add_command(label="Open", command=lambda: [self.clear(), self.view_open()])
         view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed()])
         view.add_command(label="All", command=lambda: [self.clear(), self.view_open(), self.view_closed()])
         view.add_command(label="Search", command=lambda: [self.clear(), self.search()])
-        menu_bar.add_cascade(label="View", menu=view)
+        self.menu_bar.add_cascade(label="View", menu=view)
 
-        bank = tk.Menu(menu_bar, tearoff=0)
-        bank.add_command(label="History")
-        menu_bar.add_cascade(label="Bank", menu=bank)
+        bank = tk.Menu(self.menu_bar, tearoff=0)
+        bank.add_command(label="History", command=lambda: [self.clear(), self.bank_history()])
+        self.menu_bar.add_cascade(label="Bank", menu=bank)
 
-        self.master.config(menu=menu_bar)
+        # display_bank = tk.Menu(self.menu_bar, tearoff=2, postcommand=self.update_bank)
+        current_bankroll = db.bankroll_amount()[0]
+        label_str = " " * 10 + f"Wallet: {current_bankroll}"
+        self.menu_bar.add_cascade(label=label_str)
+        self.master.config(menu=self.menu_bar)
+
+    def update_bank(self):
+        bank = db.bankroll_amount()[0]
+        label_str = " " * 10 + f"Wallet: {bank}"
+        self.menu_bar.delete(5)
+        self.menu_bar.add_cascade(label=label_str)
 
     def home_page(self):
 
@@ -167,8 +178,9 @@ class App(tk.Frame):
         self.inputs = [self.sport_input, self.match_input, self.odds_input,
                        self.wager_input, self._type_input, self.bet_on_input]
 
-        self.button = tk.Button(self.master, text="Confirm",
-                                command=lambda: [self.confirm(_type="bet"), self.home_page()], bd='5', bg="green")
+        self.button = tk.Button(self.master, text="Confirm", command=lambda:
+                                [self.confirm(_type="bet"), self.home_page(),
+                                 self.update_bank()], bd='5', bg="green")
 
         self.button.grid(row=3, column=2, pady=3)
 
@@ -234,10 +246,19 @@ class App(tk.Frame):
 
     def search(self):
         """Search db for a specific bet"""
+
         self.open_bet_menu()
         self.button.destroy()
         self.button = tk.Button(self.master, text="Search", command=lambda: [self.view_data()])
         self.button.grid(row=2, column=3)
+
+    def bank_history(self):
+        """See bankroll history"""
+
+        results = db.view_bank()
+        for i in range(len(results)):
+            self.view_labels.append(tk.Label(self.master, text=f"{results[i]}"))
+            self.view_labels[i].grid(row=i, column=0, sticky="w")
 
     def clear(self):
         """"Destroy old widgets and clear dict"""
