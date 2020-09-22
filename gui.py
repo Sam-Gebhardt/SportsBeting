@@ -55,15 +55,19 @@ class App(tk.Frame):
         self.inputs = []
         self.labels = []
 
+        self.canvas = None
         self.button = None
+        self.img = None
 
         self.menu()
-        self.start_page()
+        self.exit_button()
 
         if not path.isfile("bets.db"):
             db.initialize(0)
 
-    def start_page(self):
+        self.home_page()
+
+    def exit_button(self):
         btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
         btn.grid(row=3, column=2, pady=10)
 
@@ -93,15 +97,14 @@ class App(tk.Frame):
 
         self.master.config(menu=menu_bar)
 
-    def logo(self):
+    def home_page(self):
 
-        canvas = tk.Canvas(self.master, width=300, height=300, bg="green")
-
-        img = tk.PhotoImage(file="m1.png")
-        label = tk.Label(image=img)
-        label.image = img  # must keep a reference of the image
-        label.grid()
-        canvas.create_image(20, 20, anchor="nw", image=img)
+        self.canvas = tk.Canvas(self.master, width=300, height=300, bg="green")
+        self.img = tk.PhotoImage(file="m1.png")
+        self.label_1 = tk.Label(image=self.img)
+        self.label_1.image = self.img  # must keep a reference of the image
+        self.label_1.grid()
+        self.canvas.create_image(20, 20, anchor="nw", image=self.img)
 
     def open_bet_menu(self):
 
@@ -158,7 +161,8 @@ class App(tk.Frame):
                        self.wager_input, self._type_input, self.bet_on_input]
 
         self.button = tk.Button(self.master, text="Confirm",
-                                command=lambda: self.confirm(_type="bet"), bd='5', bg="green")
+                                command=lambda: [self.confirm(_type="bet"), self.home_page()], bd='5', bg="green")
+
         self.button.grid(row=3, column=4, pady=3)
 
     def open_parley_menu(self):
@@ -197,8 +201,9 @@ class App(tk.Frame):
         self.labels = [self.label_sport, self.label_matchup, self.label_odds, self.label_wager]
         self.inputs = [self.sport_input, self.match_input, self.odds_input, self.wager_input]
 
-        self.button = tk.Button(self.master, text="Confirm", command=lambda:
-                                self.confirm(_type="parley"), bd='5', bg="green")
+        self.button = tk.Button(self.master, text="Confirm",
+                                command=lambda: [self.confirm(_type="parley"), self.home_page()], bd='5', bg="green")
+
         self.button.grid(row=3, column=4, pady=3)
 
     def clear(self):
@@ -214,6 +219,11 @@ class App(tk.Frame):
 
         if self.button:
             self.button.destroy()
+
+        if self.canvas:
+            self.canvas.delete(self.img)
+            self.label_1.config(image="")
+
         self.data.clear()
 
     def confirm(self, _type=None):
@@ -225,7 +235,7 @@ class App(tk.Frame):
             db.new_bet(self.data)
         elif _type == "parley":
             separate_parley(self.data)
-            db.open_parley()
+            db.open_parley(self.data)
 
         self.clear()
 
