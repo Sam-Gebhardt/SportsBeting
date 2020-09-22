@@ -175,6 +175,7 @@ def new_bet(data: dict):
     bankroll = c.fetchall()[0][0]
 
     if (bankroll - data["Wager"]) < 0:
+        conn.close()
         return False
 
     c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (data["Wager"], "Master", ))
@@ -187,7 +188,7 @@ def new_bet(data: dict):
     conn.close()
 
 
-def view_open_bets():
+def view_open_bets() -> list:
     """Look at open bets"""
 
     conn = sqlite3.connect('bets.db')
@@ -196,35 +197,32 @@ def view_open_bets():
     c.execute("""SELECT * FROM open_bets""")
     open_bets = c.fetchall()
 
-    for i in open_bets:
-        print(i)
-
     c.execute("""SELECT * FROM open_parley""")
-    open_p = c.fetchall()
+    open_parleys = c.fetchall()
 
-    for i in open_p:
-        print(i)
-
+    for bet in open_parleys:
+        open_bets.append(bet)
     conn.close()
 
+    return open_bets
 
-def view_closed_bets():
+
+def view_closed_bets() -> list:
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
     c.execute("""SELECT * FROM closed_bets""")
     closed_bets = c.fetchall()
 
-    for i in closed_bets:
-        print(i)
-
     c.execute("""SELECT * FROM closed_parley""")
     closed_p = c.fetchall()
 
-    for i in closed_p:
-        print(i)
+    for bet in closed_p:
+        closed_bets.append(bet)
 
     conn.close()
+
+    return closed_bets
 
 
 def close_bet():
