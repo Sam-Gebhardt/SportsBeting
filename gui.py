@@ -3,10 +3,6 @@ import bet as db
 from os import path
 
 
-def out():
-    print("Testing")
-
-
 def type_safety(data: dict) -> bool:
     """Make sure each input is the correct type"""
     for i in data:
@@ -57,7 +53,8 @@ class App(tk.Frame):
 
         self.canvas = None
         self.button = None
-        self.img = None
+        self.img_label = None
+        self.error_msg = None
 
         self.menu()
         self.exit_button()
@@ -69,7 +66,7 @@ class App(tk.Frame):
 
     def exit_button(self):
         btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
-        btn.grid(row=3, column=2, pady=10)
+        btn.grid(row=3, column=1, pady=10)
 
     def menu(self):
         menu_bar = tk.Menu(self.master)
@@ -85,7 +82,7 @@ class App(tk.Frame):
         menu_bar.add_cascade(label="Close", menu=_close)
 
         view = tk.Menu(menu_bar, tearoff=0)
-        view.add_command(label="Open", command=out)
+        view.add_command(label="Open", command=None)
         view.add_command(label="Closed")
         view.add_command(label="All")
         view.add_command(label="Search")
@@ -100,11 +97,11 @@ class App(tk.Frame):
     def home_page(self):
 
         self.canvas = tk.Canvas(self.master, width=300, height=300, bg="green")
-        self.img = tk.PhotoImage(file="m1.png")
-        self.label_1 = tk.Label(image=self.img)
-        self.label_1.image = self.img  # must keep a reference of the image
-        self.label_1.grid()
-        self.canvas.create_image(20, 20, anchor="nw", image=self.img)
+        img = tk.PhotoImage(file="m1.png")
+        self.img_label = tk.Label(image=img)
+        self.img_label.image = img  # must keep a reference of the image
+        self.img_label.grid()
+        self.canvas.create_image(20, 20, anchor="nw", image=img)
 
     def open_bet_menu(self):
 
@@ -136,23 +133,23 @@ class App(tk.Frame):
         self.data["Odds"] = odds
         self.data["Wager"] = wager
 
-        self.sport_input.grid(row=1, column=2)
-        self.label_sport.grid(row=2, column=2)
+        self.sport_input.grid(row=1, column=1)
+        self.label_sport.grid(row=2, column=1)
 
-        self._type_input.grid(row=1, column=3)
-        self.label_type.grid(row=2, column=3)
+        self._type_input.grid(row=1, column=2)
+        self.label_type.grid(row=2, column=2)
 
-        self.match_input.grid(row=1, column=4)
-        self.label_matchup.grid(row=2, column=4)
+        self.match_input.grid(row=1, column=3)
+        self.label_matchup.grid(row=2, column=3)
 
-        self.bet_on_input.grid(row=1, column=5, pady=30)
-        self.label_bet_on.grid(row=2, column=5)
+        self.bet_on_input.grid(row=1, column=4, pady=30)
+        self.label_bet_on.grid(row=2, column=4)
 
-        self.odds_input.grid(row=1, column=6)
-        self.label_odds.grid(row=2, column=6)
+        self.odds_input.grid(row=1, column=5)
+        self.label_odds.grid(row=2, column=5)
 
-        self.wager_input.grid(row=1, column=7)
-        self.label_wager.grid(row=2, column=7)
+        self.wager_input.grid(row=1, column=6)
+        self.label_wager.grid(row=2, column=6)
 
         self.labels = [self.label_sport, self.label_matchup, self.label_odds,
                        self.label_wager, self.label_type, self.label_bet_on]
@@ -201,9 +198,9 @@ class App(tk.Frame):
         self.labels = [self.label_sport, self.label_matchup, self.label_odds, self.label_wager]
         self.inputs = [self.sport_input, self.match_input, self.odds_input, self.wager_input]
 
-        self.button = tk.Button(self.master, text="Confirm",
+        self.button = tk.Button(self.master, text="Confirm", 
                                 command=lambda: [self.confirm(_type="parley"), self.home_page()], bd='5', bg="green")
-
+        
         self.button.grid(row=3, column=4, pady=3)
 
     def clear(self):
@@ -221,15 +218,17 @@ class App(tk.Frame):
             self.button.destroy()
 
         if self.canvas:
-            self.canvas.delete(self.img)
-            self.label_1.config(image="")
+            self.img_label.config(image="")
 
         self.data.clear()
 
     def confirm(self, _type=None):
 
         if not type_safety(self.data):
-            pass  # todo Error handling
+            self.error_msg = tk.Label(self.master, text="Odds/Wager must be a number")
+            self.error_msg.grid(row=2, column=2)
+            self.clear()
+            return
 
         if _type == "bet":
             db.new_bet(self.data)
@@ -238,6 +237,9 @@ class App(tk.Frame):
             db.open_parley(self.data)
 
         self.clear()
+
+    def error_handling(self):
+        """Handle the case where inputs """
 
 
 if __name__ == "__main__":
