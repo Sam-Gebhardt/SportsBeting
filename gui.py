@@ -66,7 +66,7 @@ class App(tk.Frame):
 
     def exit_button(self):
         btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
-        btn.grid(row=3, column=1, pady=10)
+        btn.grid(row=3, column=0, pady=10)
 
     def menu(self):
         menu_bar = tk.Menu(self.master)
@@ -133,23 +133,23 @@ class App(tk.Frame):
         self.data["Odds"] = odds
         self.data["Wager"] = wager
 
-        self.sport_input.grid(row=1, column=1)
-        self.label_sport.grid(row=2, column=1)
+        self.sport_input.grid(row=1, column=0)
+        self.label_sport.grid(row=2, column=0)
 
-        self._type_input.grid(row=1, column=2)
-        self.label_type.grid(row=2, column=2)
+        self._type_input.grid(row=1, column=1)
+        self.label_type.grid(row=2, column=1)
 
-        self.match_input.grid(row=1, column=3)
-        self.label_matchup.grid(row=2, column=3)
+        self.match_input.grid(row=1, column=2)
+        self.label_matchup.grid(row=2, column=2)
 
-        self.bet_on_input.grid(row=1, column=4, pady=30)
-        self.label_bet_on.grid(row=2, column=4)
+        self.bet_on_input.grid(row=1, column=3, pady=30)
+        self.label_bet_on.grid(row=2, column=3)
 
-        self.odds_input.grid(row=1, column=5)
-        self.label_odds.grid(row=2, column=5)
+        self.odds_input.grid(row=1, column=4)
+        self.label_odds.grid(row=2, column=4)
 
-        self.wager_input.grid(row=1, column=6)
-        self.label_wager.grid(row=2, column=6)
+        self.wager_input.grid(row=1, column=5)
+        self.label_wager.grid(row=2, column=5)
 
         self.labels = [self.label_sport, self.label_matchup, self.label_odds,
                        self.label_wager, self.label_type, self.label_bet_on]
@@ -160,7 +160,7 @@ class App(tk.Frame):
         self.button = tk.Button(self.master, text="Confirm",
                                 command=lambda: [self.confirm(_type="bet"), self.home_page()], bd='5', bg="green")
 
-        self.button.grid(row=3, column=4, pady=3)
+        self.button.grid(row=3, column=2, pady=3)
 
     def open_parley_menu(self):
         self.label_sport = tk.Label(self.master, text="Sport")
@@ -183,17 +183,17 @@ class App(tk.Frame):
         self.data["Odds"] = odds
         self.data["Wager"] = wager
 
-        self.sport_input.grid(row=1, column=2)
-        self.label_sport.grid(row=2, column=2)
+        self.sport_input.grid(row=1, column=0)
+        self.label_sport.grid(row=2, column=0)
 
-        self.match_input.grid(row=1, column=4)
-        self.label_matchup.grid(row=2, column=4)
+        self.match_input.grid(row=1, column=1)
+        self.label_matchup.grid(row=2, column=1)
 
-        self.odds_input.grid(row=1, column=6, pady=30)
-        self.label_odds.grid(row=2, column=6)
+        self.odds_input.grid(row=1, column=2, pady=30)
+        self.label_odds.grid(row=2, column=2)
 
-        self.wager_input.grid(row=1, column=7)
-        self.label_wager.grid(row=2, column=7)
+        self.wager_input.grid(row=1, column=3)
+        self.label_wager.grid(row=2, column=3)
 
         self.labels = [self.label_sport, self.label_matchup, self.label_odds, self.label_wager]
         self.inputs = [self.sport_input, self.match_input, self.odds_input, self.wager_input]
@@ -201,7 +201,7 @@ class App(tk.Frame):
         self.button = tk.Button(self.master, text="Confirm", 
                                 command=lambda: [self.confirm(_type="parley"), self.home_page()], bd='5', bg="green")
         
-        self.button.grid(row=3, column=4, pady=3)
+        self.button.grid(row=3, column=1, pady=3)
 
     def clear(self):
         """"Destroy old widgets and send data to database"""
