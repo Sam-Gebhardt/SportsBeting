@@ -201,13 +201,17 @@ def view_open_bets() -> list:
     open_parleys = c.fetchall()
 
     for bet in open_parleys:
+        bet = list(bet)
+        while "NULL" in bet:
+            bet.remove("NULL")
+
         open_bets.append(bet)
     conn.close()
 
     return open_bets
 
 
-def view_closed_bets() -> list:
+def view_closed_bets() -> list:  # todo combine this/view_open_bets()
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
@@ -218,6 +222,10 @@ def view_closed_bets() -> list:
     closed_p = c.fetchall()
 
     for bet in closed_p:
+        bet = list(bet)
+        while "NULL" in bet:
+            bet.remove("NULL")
+
         closed_bets.append(bet)
 
     conn.close()
@@ -348,21 +356,17 @@ def delete_bet():
     conn.close()
 
 
-def custom_search():
+def custom_search(data: dict) -> list:
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    search = input("Search by and value: ")
-    search = search.split(",")
+    query = f"""SELECT * FROM open_bets WHERE sport LIKE '%{data["Sport"]}%' AND type LIKE '%{data["Type"]}%'
+    matchup LIKE '%{data["Matchup"]}%' AND bet_on LIKE '%{data["Bet"]}%' AND odds LIKE '%{data["Odds"]}%' AND
+    wager LIKE '%{data["Wager"]}%' AND to_win LIKE '%{data["to_win"]}%' AND date LIKE '%{data["Date"]}%')"""
+    # Match any similar results and if the category is left blank it matches everything
 
-    for i in range(len(search)):
-        search[i] = search[i].strip()
-
-    query = f"""SELECT * FROM open_bets WHERE ({search[0]} = ?)"""  # Use for loop to make multi-var custom search
-    c.execute(query, (search[1],))
+    c.execute(query)
     results = c.fetchall()
 
-    for bet in results:
-        print(bet)
-
     conn.close()
+    return results
