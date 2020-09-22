@@ -360,9 +360,9 @@ def custom_search(data: dict) -> list:
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    query = f"""SELECT * FROM open_bets WHERE sport LIKE '%{data["Sport"]}%' AND type LIKE '%{data["Type"]}%'
+    query = f"""SELECT * FROM open_bets WHERE sport LIKE '%{data["Sport"]}%' AND type LIKE '%{data["Type"]}%' AND
     matchup LIKE '%{data["Matchup"]}%' AND bet_on LIKE '%{data["Bet"]}%' AND odds LIKE '%{data["Odds"]}%' AND
-    wager LIKE '%{data["Wager"]}%' AND to_win LIKE '%{data["to_win"]}%' AND date LIKE '%{data["Date"]}%')"""
+    wager LIKE '%{data["Wager"]}%'"""
     # Match any similar results and if the category is left blank it matches everything
 
     c.execute(query)
@@ -370,3 +370,4 @@ def custom_search(data: dict) -> list:
 
     conn.close()
     return results
+
