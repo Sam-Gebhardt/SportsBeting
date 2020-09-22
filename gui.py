@@ -86,7 +86,7 @@ class App(tk.Frame):
 
         view = tk.Menu(menu_bar, tearoff=0)
         view.add_command(label="Open", command=lambda: [self.clear(), self.view_open()])
-        view.add_command(label="Closed")
+        view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed()])
         view.add_command(label="All")
         view.add_command(label="Search")
         menu_bar.add_cascade(label="View", menu=view)
@@ -210,6 +210,12 @@ class App(tk.Frame):
         open_bets = db.view_open_bets()
         for i in range(len(open_bets)):
             self.view_labels.append(tk.Label(self.master, text=f"{open_bets[i]}"))
+            self.view_labels[i].grid(row=i, column=0, sticky="w")
+
+    def view_closed(self):
+        closed_bets = db.view_closed_bets()
+        for i in range(len(closed_bets)):
+            self.view_labels.append(tk.Label(self.master, text=f"{closed_bets[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
 
     def clear(self):
