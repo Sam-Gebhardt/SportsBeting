@@ -34,30 +34,33 @@ class App(tk.Frame):
         self.master = master
         self.data = {}
 
-        self.label_sport = None
+        self.label_sport = None  # Labels for entries
         self.label_matchup = None
         self.label_odds = None
         self.label_wager = None
         self.label_type = None
         self.label_bet_on = None
 
-        self.sport_input = None
+        self.sport_input = None  # text entry boxes
         self.match_input = None
         self.odds_input = None
         self.wager_input = None
         self._type_input = None
         self.bet_on_input = None
 
-        self.inputs = []
-        self.labels = []
+        self.inputs = []  # list of input boxes
+        self.labels = []  # list of labels
 
-        self.canvas = None
-        self.button = None
+        self.canvas = None  # home image
         self.img_label = None
-        self.error_msg = None
+
+        self.button = None  # Confirm button
+
+        self.error_msg = None  # Error if wager/odds != int
+        self.view_labels = []  # labels for viewing bets
 
         self.menu()
-        self.exit_button()
+        # self.exit_button()
 
         if not path.isfile("bets.db"):
             db.initialize(0)
@@ -82,7 +85,7 @@ class App(tk.Frame):
         menu_bar.add_cascade(label="Close", menu=_close)
 
         view = tk.Menu(menu_bar, tearoff=0)
-        view.add_command(label="Open", command=None)
+        view.add_command(label="Open", command=lambda: [self.clear(), self.view_open()])
         view.add_command(label="Closed")
         view.add_command(label="All")
         view.add_command(label="Search")
@@ -203,8 +206,14 @@ class App(tk.Frame):
         
         self.button.grid(row=3, column=1, pady=3)
 
+    def view_open(self):
+        open_bets = db.view_open_bets()
+        for i in range(len(open_bets)):
+            self.view_labels.append(tk.Label(self.master, text=f"{open_bets[i]}"))
+            self.view_labels[i].grid(row=i, column=0, sticky="w")
+
     def clear(self):
-        """"Destroy old widgets and send data to database"""
+        """"Destroy old widgets and clear dict"""
 
         for label in self.labels:
             if label:
@@ -213,6 +222,10 @@ class App(tk.Frame):
         for inputs in self.inputs:
             if inputs:
                 inputs.destroy()
+
+        for bet in self.view_labels:
+            bet.destroy()
+        self.view_labels = []
 
         if self.button:
             self.button.destroy()
@@ -233,7 +246,7 @@ class App(tk.Frame):
                                bg="green", bd='5')
             label.pack()
             button.pack()
-            win.grab_set()
+            win.grab_set()  # todo Make its own class for win
             self.clear()
 
             return
