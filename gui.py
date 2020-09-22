@@ -27,6 +27,13 @@ def separate_parley(data: dict):
         data[key] = bets[i]
 
 
+def turn_to_str(data: dict) -> dict:
+    for i in data:
+        data[i] = data[i].get()
+
+    return data
+
+
 class App(tk.Frame):
 
     def __init__(self, master=None):
@@ -87,8 +94,8 @@ class App(tk.Frame):
         view = tk.Menu(menu_bar, tearoff=0)
         view.add_command(label="Open", command=lambda: [self.clear(), self.view_open()])
         view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed()])
-        view.add_command(label="All")
-        view.add_command(label="Search")
+        view.add_command(label="All", command=lambda: [self.clear(), self.view_open(), self.view_closed()])
+        view.add_command(label="Search", command=lambda: [self.clear(), self.search()])
         menu_bar.add_cascade(label="View", menu=view)
 
         bank = tk.Menu(menu_bar, tearoff=0)
@@ -217,6 +224,20 @@ class App(tk.Frame):
         for i in range(len(closed_bets)):
             self.view_labels.append(tk.Label(self.master, text=f"{closed_bets[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
+
+    def view_data(self):
+        results = db.custom_search(turn_to_str(self.data))
+        self.clear()
+        for i in range(len(results)):
+            self.view_labels.append(tk.Label(self.master, text=f"{results[i]}"))
+            self.view_labels[i].grid(row=i, column=0, sticky="w")
+
+    def search(self):
+        """Search db for a specific bet"""
+        self.open_bet_menu()
+        self.button.destroy()
+        self.button = tk.Button(self.master, text="Search", command=lambda: [self.view_data()])
+        self.button.grid(row=2, column=3)
 
     def clear(self):
         """"Destroy old widgets and clear dict"""
