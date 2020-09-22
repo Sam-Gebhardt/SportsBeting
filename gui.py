@@ -225,9 +225,17 @@ class App(tk.Frame):
     def confirm(self, _type=None):
 
         if not type_safety(self.data):
-            self.error_msg = tk.Label(self.master, text="Odds/Wager must be a number")
-            self.error_msg.grid(row=2, column=2)
+
+            win = tk.Toplevel()
+            win.title("Error")
+            label = tk.Label(win, text="Wager/Odds must be a number", bg="red")
+            button = tk.Button(win, text="Okay", command=lambda: [win.grab_release(), win.destroy()],
+                               bg="green", bd='5')
+            label.pack()
+            button.pack()
+            win.grab_set()
             self.clear()
+
             return
 
         if _type == "bet":
@@ -237,9 +245,6 @@ class App(tk.Frame):
             db.open_parley(self.data)
 
         self.clear()
-
-    def error_handling(self):
-        """Handle the case where inputs """
 
 
 if __name__ == "__main__":
