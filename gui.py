@@ -101,9 +101,9 @@ class App(tk.Frame):
 
         bank = tk.Menu(self.menu_bar, tearoff=0)
         bank.add_command(label="History", command=lambda: [self.clear(), self.bank_history()])
+        bank.add_command(label="Add", command=lambda: [self.clear(), self.bank_add()])
         self.menu_bar.add_cascade(label="Bank", menu=bank)
 
-        # display_bank = tk.Menu(self.menu_bar, tearoff=2, postcommand=self.update_bank)
         current_bankroll = db.bankroll_amount()[0]
         label_str = " " * 10 + f"Wallet: {current_bankroll}"
         self.menu_bar.add_cascade(label=label_str)
@@ -112,8 +112,7 @@ class App(tk.Frame):
     def update_bank(self):
         bank = db.bankroll_amount()[0]
         label_str = " " * 10 + f"Wallet: {bank}"
-        self.menu_bar.delete(5)
-        self.menu_bar.add_cascade(label=label_str)
+        self.menu_bar.entryconfig(5, label=label_str)
 
     def home_page(self):
 
@@ -259,6 +258,27 @@ class App(tk.Frame):
         for i in range(len(results)):
             self.view_labels.append(tk.Label(self.master, text=f"{results[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
+
+    def bank_add(self):
+        """Bank money to the bank"""
+        
+        self.label_wager = tk.Label(self.master, text="Amount: ")
+        wager = tk.StringVar()
+        self.wager_input = tk.Entry(self.master, width=7, textvariable=wager)
+        self.data["Wager"] = wager
+
+        self.wager_input.grid(row=1, column=1)
+        self.label_wager.grid(row=1, column=0)
+
+        self.labels = [self.label_wager]
+        self.inputs = [self.wager_input]
+
+        self.button = tk.Button(self.master, text="Add", command=lambda:
+                                [db.bankroll_add(self.data["Wager"].get()),  # send change to db
+                                 self.update_bank(), self.clear(), self.home_page()],
+                                bd='5', bg="green")
+
+        self.button.grid(row=1, column=2, padx=13)
 
     def clear(self):
         """"Destroy old widgets and clear dict"""
