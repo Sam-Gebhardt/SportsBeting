@@ -88,8 +88,8 @@ class App(tk.Frame):
         self.menu_bar.add_cascade(label="Open", menu=_open)
 
         _close = tk.Menu(self.menu_bar, tearoff=0)
-        _close.add_command(label="Bet")
-        _close.add_command(label="Parley")
+        _close.add_command(label="Bet", command=lambda: [self.clear(), self.close_bet()])
+        _close.add_command(label="Parley", command=lambda: [self.clear(), self.close_parley()])
         self.menu_bar.add_cascade(label="Close", menu=_close)
 
         view = tk.Menu(self.menu_bar, tearoff=0)
@@ -223,6 +223,14 @@ class App(tk.Frame):
                                 command=lambda: [self.confirm(_type="parley"), self.home_page()], bd='5', bg="green")
         
         self.button.grid(row=3, column=1, pady=3)
+
+    def close_bet(self):
+        """Close a bet"""
+        pass
+
+    def close_parley(self):
+        """Close a parley"""
+        pass
 
     def view_open(self):
         open_bets = db.view_open_bets()
