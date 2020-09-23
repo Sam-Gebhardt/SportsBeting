@@ -31,7 +31,7 @@ def initialize(bank: float):
 
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
-    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Starting", 0))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("winnings", 0))
 
     conn.commit()
     conn.close()
@@ -72,7 +72,7 @@ def bankroll_amount():
     c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Master",))
     current = c.fetchall()[0][0]
 
-    c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Starting",))
+    c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("winnings",))
     change = c.fetchall()[0][0]
 
     # c.execute("""SELECT SUM(wager) FROM open_bets""")
@@ -105,26 +105,33 @@ def bankroll_history(master_amount: int):
     conn.close()
 
 
-def bankroll_update(change: float, wager=0, add=False):
-    """Add or subtract from bankroll"""
-
+def bankroll_add(amount: float) -> None:
+    """Add money to the bank"""
+    
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    c.execute("""SELECT * FROM bankroll WHERE date = ?""", ("Master",))
-    bank = c.fetchall()[0][1]
-
-    if not add:
-        c.execute("""UPDATE bankroll SET amount = amount - ? WHERE date = ?""", (change, "Starting"))
-
-    else:
-        bank += change + wager
-        c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (change, "Starting"))
+    c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (amount, "Master"))
 
     conn.commit()
     conn.close()
 
-    bankroll_history(bank)
+
+bankroll_add(12)
+
+
+def view_bank() -> list:
+    """Return bankroll history as a list"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    c.execute("""SELECT * FROM bankroll WHERE date != ? AND date != ?""", ("Master", "winnings", ))
+    bank = c.fetchall()
+
+    conn.close()
+
+    return bank
 
 
 def calc_odds(odds: int, wager: float) -> float:
@@ -186,6 +193,7 @@ def new_bet(data: dict):
 
     conn.commit()
     conn.close()
+    bankroll_history(bankroll - data["Wager"])
 
 
 def view_open_bets() -> list:
@@ -233,7 +241,7 @@ def view_closed_bets() -> list:  # todo combine this/view_open_bets()
     return closed_bets
 
 
-def close_bet():
+def close_bet():  # todo update winnings bankroll
     """Move an open bet to closed_bet table"""
 
     conn = sqlite3.connect('bets.db')
@@ -276,10 +284,10 @@ def close_bet():
                   (open_bets[j][0], open_bets[j][2], open_bets[j][3]))
 
         conn.commit()
-        if outcome == "w":  # if won, then add to_win else subtract wager
-            bankroll_update(open_bets[j][6], wager=open_bets[j][5], add=True)
-        else:
-            bankroll_update(open_bets[j][5])
+        # if outcome == "w":  # if won, then add to_win else subtract wager
+        #     bankroll_update(open_bets[j][6], wager=open_bets[j][5], add=True)
+        # else:
+        #     bankroll_update(open_bets[j][5])
 
         print(f"Bet #{j} closed")
 
@@ -370,4 +378,3 @@ def custom_search(data: dict) -> list:
 
     conn.close()
     return results
-
