@@ -66,6 +66,8 @@ class App(tk.Frame):
         self.error_msg = None  # Error if wager/odds != int
         self.view_labels = []  # labels for viewing bets
         self.menu_bar = None  # menu bar
+        self.selections = None  # list box selections to close bets
+        self.listbox = None
 
         self.menu()
         # self.exit_button()
@@ -226,11 +228,23 @@ class App(tk.Frame):
 
     def close_bet(self):
         """Close a bet"""
-        pass
+        self.listbox = tk.Listbox(self.master, selectmode="multiple")
+        self.listbox.config(width=0, height=0)
+        bets = db.view_open_bets()
+        for i in bets:
+            self.listbox.insert("end", i)
+        self.listbox.grid(row=0, column=0)
+        button = tk.Button(self.master, text="Close Bets", command=lambda:
+                           [self.get_selections(), self.listbox.destroy(), button.destroy(), self.home_page()])
+        button.grid(row=1, column=0)
 
     def close_parley(self):
         """Close a parley"""
         pass
+
+    def get_selections(self):
+        """Get selections from listbox"""
+        self.selections = [self.listbox.get(i) for i in self.listbox.curselection()]
 
     def view_open(self):
         open_bets = db.view_open_bets()
@@ -310,6 +324,7 @@ class App(tk.Frame):
             self.img_label.config(image="")
 
         self.data.clear()
+        self.selections = None
 
     def confirm(self, _type=None):
 
@@ -329,6 +344,7 @@ class App(tk.Frame):
 
         if _type == "bet":
             db.new_bet(self.data)
+
         elif _type == "parley":
             separate_parley(self.data)
             db.open_parley(self.data)
@@ -342,3 +358,9 @@ if __name__ == "__main__":
     root.title("Bet Tracker")
     root.geometry("1000x500")
     app.mainloop()
+
+# todo:
+#  * close bet/close parley
+#  * Math tab w/ imp prob, covert, to_make
+#  * exit button
+#  * logo (remove or make?)
