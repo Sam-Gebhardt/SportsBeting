@@ -31,7 +31,7 @@ def initialize(bank: float):
 
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", (date.today(), bank))
     c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Master", bank))
-    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("winnings", 0))
+    c.execute("""INSERT INTO bankroll (date, amount) VALUES (?, ?)""", ("Winnings", 0))
 
     conn.commit()
     conn.close()
@@ -72,7 +72,7 @@ def bankroll_amount():
     c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Master",))
     current = c.fetchall()[0][0]
 
-    c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("winnings",))
+    c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Winnings",))
     change = c.fetchall()[0][0]
 
     # c.execute("""SELECT SUM(wager) FROM open_bets""")
@@ -117,16 +117,13 @@ def bankroll_add(amount: float) -> None:
     conn.close()
 
 
-bankroll_add(12)
-
-
 def view_bank() -> list:
     """Return bankroll history as a list"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    c.execute("""SELECT * FROM bankroll WHERE date != ? AND date != ?""", ("Master", "winnings", ))
+    c.execute("""SELECT * FROM bankroll WHERE date != ? AND date != ?""", ("Master", "Winnings", ))
     bank = c.fetchall()
 
     conn.close()
@@ -241,56 +238,35 @@ def view_closed_bets() -> list:  # todo combine this/view_open_bets()
     return closed_bets
 
 
-def close_bet():  # todo update winnings bankroll
+def close_bet(to_close: list):  # todo update Winnings bankroll
     """Move an open bet to closed_bet table"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    c.execute("""SELECT * FROM open_bets""")
-    open_bets = c.fetchall()
-
-    for i, bet in enumerate(open_bets):
-        print(f"{i}: {bet}")
-
-    close = input("To close: ")
-
-    for j in close:
-        try:
-            j = int(j)
-        except ValueError:
-            continue
-
-        while True:
-
-            outcome = input(f"W/L bet #{j}: ")
-            outcome = outcome.lower()
-            if outcome == "w" or outcome == "l":
-                break
-
-        amount = open_bets[j][4] * -1
+    outcome = to_close[-1]
+    for bet in to_close:
+        amount = bet[4] * -1
         # lost on the bet == wager
-        if outcome == "w":
-            amount = float(open_bets[j][4]) + float(open_bets[j][5])
+        if outcome == "W":
+            amount = float(bet[4]) + float(bet[5])
             amount = round(amount, 2)
             # amount = wager + to_win
-
+    
         c.execute("""INSERT INTO closed_bets (sport, type, matchup, bet_on, odds, wager, 
         to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                  (open_bets[j][0], open_bets[j][1], open_bets[j][2], open_bets[j][3], open_bets[j][4],
-                   open_bets[j][5], open_bets[j][6], outcome, amount, open_bets[j][7],))
+                  (bet[0], bet[1], bet[2], bet[3], bet[4],
+                   bet[5], bet[6], outcome, amount, bet[7],))
 
-        c.execute("""DELETE FROM open_bets WHERE sport = ? AND matchup = ? AND bet_on = ?""",
-                  (open_bets[j][0], open_bets[j][2], open_bets[j][3]))
+        c.execute("""DELETE FROM bet WHERE sport = ? AND matchup = ? AND bet_on = ?""",
+                  (bet[0], bet[2], bet[3]))
 
         conn.commit()
         # if outcome == "w":  # if won, then add to_win else subtract wager
-        #     bankroll_update(open_bets[j][6], wager=open_bets[j][5], add=True)
+        #     bankroll_update(bet[j][6], wager=bet[j][5], add=True)
         # else:
-        #     bankroll_update(open_bets[j][5])
-
-        print(f"Bet #{j} closed")
-
+        #     bankroll_update(bet[j][5])
+    
     conn.close()
 
 
@@ -378,3 +354,9 @@ def custom_search(data: dict) -> list:
 
     conn.close()
     return results
+
+
+# todo:
+#  * remove unused functions
+#  * covert for gui use
+#  * general cleanup
