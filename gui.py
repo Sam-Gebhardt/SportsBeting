@@ -234,17 +234,27 @@ class App(tk.Frame):
         for i in bets:
             self.listbox.insert("end", i)
         self.listbox.grid(row=0, column=0)
-        button = tk.Button(self.master, text="Close Bets", command=lambda:
-                           [self.get_selections(), self.listbox.destroy(), button.destroy(), self.home_page()])
-        button.grid(row=1, column=0)
+        won_button = tk.Button(self.master, text="Won Bets",
+                               command=lambda: [self.get_selections(), db.close_bet(self.selections),
+                                                self.listbox.destroy(), won_button.destroy(), self.home_page()])
+        loss_button = tk.Button(self.master, text="loss Bets",
+                                command=lambda: [self.get_selections(loss=True), db.close_bet(self.selections),
+                                                 self.listbox.destroy(), loss_button.destroy(), self.home_page()])
+
+        won_button.grid(row=1, column=0, padx=25)
+        loss_button.grid(row=1, column=1, padx=25)
 
     def close_parley(self):
         """Close a parley"""
         pass
 
-    def get_selections(self):
+    def get_selections(self, loss=False):
         """Get selections from listbox"""
         self.selections = [self.listbox.get(i) for i in self.listbox.curselection()]
+        if loss:
+            self.selections.append("L")
+        else:
+            self.selections.append("W")
 
     def view_open(self):
         open_bets = db.view_open_bets()
@@ -364,3 +374,4 @@ if __name__ == "__main__":
 #  * Math tab w/ imp prob, covert, to_make
 #  * exit button
 #  * logo (remove or make?)
+#  * Error if bet > bank in gui
