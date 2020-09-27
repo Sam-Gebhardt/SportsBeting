@@ -19,7 +19,6 @@ def type_safety(data: dict) -> bool:
 
 
 def separate_parley(data: dict):
-
     bets = data["Matchup"].split(",")
     for i in range(len(bets)):
         bets[i] = bets[i].strip()
@@ -35,7 +34,6 @@ def turn_to_str(data: dict) -> dict:
 
 
 def make_db():
-
     if not path.isfile("bets.db"):
         db.initialize(0)
 
@@ -61,6 +59,7 @@ class App(tk.Frame):
         self.img_label = None
 
         self.button = None  # Confirm button
+        self.close_button = None  # exit the app
 
         self.error_msg = None  # Error if wager/odds != int
         self.view_labels = []  # labels for viewing bets
@@ -71,37 +70,41 @@ class App(tk.Frame):
         self.won_button = self.loss_button = None
 
         self.menu()
-        # self.exit_button()
+        self.exit_button()
 
         self.home_page()
 
-    def exit_button(self):
-        btn = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
-        btn.grid(row=3, column=0, pady=10)
+    def exit_button(self, col=99):
+        self.close_button = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
+        self.close_button.grid(row=99, column=col, sticky="SE")
 
     def menu(self):
         self.menu_bar = tk.Menu(self.master)
 
         _open = tk.Menu(self.menu_bar, tearoff=0)
-        _open.add_command(label="Bet", command=lambda: [self.clear(), self.open_bet_menu()])
-        _open.add_command(label="Parley", command=lambda: [self.clear(), self.open_parley_menu()])
+        _open.add_command(label="Bet", command=lambda: [self.clear(), self.open_bet_menu(), self.exit_button(col=5)])
+        _open.add_command(label="Parley", command=lambda:
+                          [self.clear(), self.open_parley_menu(), self.exit_button(col=3)])
+
         self.menu_bar.add_cascade(label="Open", menu=_open)
 
         _close = tk.Menu(self.menu_bar, tearoff=0)
-        _close.add_command(label="Bet", command=lambda: [self.clear(), self.close_bet()])
-        _close.add_command(label="Parley", command=lambda: [self.clear(), self.close_parley()])
+        _close.add_command(label="Bet", command=lambda: [self.clear(), self.close_bet(), self.exit_button()])
+        _close.add_command(label="Parley", command=lambda: [self.clear(), self.close_parley(), self.exit_button()])
         self.menu_bar.add_cascade(label="Close", menu=_close)
 
         view = tk.Menu(self.menu_bar, tearoff=0)
-        view.add_command(label="Open", command=lambda: [self.clear(), self.view_open()])
-        view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed()])
-        view.add_command(label="All", command=lambda: [self.clear(), self.view_open(), self.view_closed()])
-        view.add_command(label="Search", command=lambda: [self.clear(), self.search()])
+        view.add_command(label="Open", command=lambda: [self.clear(), self.view_open(), self.exit_button()])
+        view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed(), self.exit_button()])
+        view.add_command(label="All", command=lambda:
+                         [self.clear(), self.view_open(), self.view_closed(), self.exit_button()])
+
+        view.add_command(label="Search", command=lambda: [self.clear(), self.search(), self.exit_button(col=5)])
         self.menu_bar.add_cascade(label="View", menu=view)
 
         bank = tk.Menu(self.menu_bar, tearoff=0)
-        bank.add_command(label="History", command=lambda: [self.clear(), self.bank_history()])
-        bank.add_command(label="Add", command=lambda: [self.clear(), self.bank_add()])
+        bank.add_command(label="History", command=lambda: [self.clear(), self.bank_history(), self.exit_button()])
+        bank.add_command(label="Add", command=lambda: [self.clear(), self.bank_add(), self.exit_button()])
         self.menu_bar.add_cascade(label="Bank", menu=bank)
 
         current_bankroll = db.bankroll_amount()[0]
@@ -219,9 +222,9 @@ class App(tk.Frame):
         self.labels = [self.label_sport, self.label_matchup, self.label_odds, self.label_wager]
         self.inputs = [self.sport_input, self.match_input, self.odds_input, self.wager_input]
 
-        self.button = tk.Button(self.master, text="Confirm", 
+        self.button = tk.Button(self.master, text="Confirm",
                                 command=lambda: [self.confirm(_type="parley"), self.home_page()], bd='5', bg="green")
-        
+
         self.button.grid(row=3, column=1, pady=3)
 
     def close_bet(self):
@@ -278,8 +281,8 @@ class App(tk.Frame):
 
         self.open_bet_menu()
         self.button.destroy()
-        self.button = tk.Button(self.master, text="Search", command=lambda: [self.view_data()])
-        self.button.grid(row=2, column=3)
+        self.button = tk.Button(self.master, text="Search", command=lambda: [self.view_data()], bg="green", bd=5)
+        self.button.grid(row=3, column=3)
 
     def bank_history(self):
         """See bankroll history"""
@@ -291,7 +294,7 @@ class App(tk.Frame):
 
     def bank_add(self):
         """Bank money to the bank"""
-        
+
         self.label_wager = tk.Label(self.master, text="Amount: ")
         wager = tk.StringVar()
         self.wager_input = tk.Entry(self.master, width=7, textvariable=wager)
@@ -305,8 +308,7 @@ class App(tk.Frame):
 
         self.button = tk.Button(self.master, text="Add", command=lambda:
                                 [db.bankroll_add(self.data["Wager"].get()),  # send change to db
-                                 self.update_bank(), self.clear(), self.home_page()],
-                                bd='5', bg="green")
+                                 self.update_bank(), self.clear(), self.home_page()], bd='5', bg="green")
 
         self.button.grid(row=1, column=2, padx=13)
 
@@ -328,7 +330,7 @@ class App(tk.Frame):
         if self.canvas:
             self.img_label.config(image="")
 
-        widgets = [self.button, self.listbox, self.won_button, self.loss_button]
+        widgets = [self.button, self.close_button, self.listbox, self.won_button, self.loss_button]
         for i in widgets:
             if i:
                 i.destroy()
@@ -339,7 +341,6 @@ class App(tk.Frame):
     def confirm(self, _type=None):
 
         if not type_safety(self.data):
-
             win = tk.Toplevel()
             win.title("Error")
             label = tk.Label(win, text="Wager/Odds must be a number", bg="red")
@@ -376,3 +377,4 @@ if __name__ == "__main__":
 #  * exit button
 #  * logo (remove or make?)
 #  * Error if bet > bank in gui
+#  * Format outputs
