@@ -125,6 +125,7 @@ class App(tk.Frame):
         self.img_label.image = img  # must keep a reference of the image
         self.img_label.grid()
         self.canvas.create_image(20, 20, anchor="nw", image=img)
+        self.exit_button()
 
     def open_bet_menu(self):
 
@@ -354,7 +355,18 @@ class App(tk.Frame):
             return
 
         if _type == "bet":
-            db.new_bet(self.data)
+            if not db.new_bet(self.data):
+                win = tk.Toplevel()
+                win.title("Error")
+                label = tk.Label(win, text="Wager is more than Bankroll", bg="red")
+                button = tk.Button(win, text="Okay", command=lambda: [win.grab_release(), win.destroy()],
+                                   bg="green", bd='5')
+                label.pack()
+                button.pack()
+                win.grab_set()  # todo Make its own class for win
+                self.clear()
+
+                return
 
         elif _type == "parley":
             separate_parley(self.data)
@@ -374,7 +386,6 @@ if __name__ == "__main__":
 # todo:
 #  * close bet/close parley
 #  * Math tab w/ imp prob, covert, to_make
-#  * exit button
+#  * exit button --Refractor so it doesn't have to be called everytime
 #  * logo (remove or make?)
-#  * Error if bet > bank in gui
 #  * Format outputs
