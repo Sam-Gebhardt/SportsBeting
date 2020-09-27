@@ -70,8 +70,6 @@ class App(tk.Frame):
         self.won_button = self.loss_button = None
 
         self.menu()
-        self.exit_button()
-
         self.home_page()
 
     def exit_button(self, col=99):
