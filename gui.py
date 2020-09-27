@@ -9,7 +9,7 @@ def type_safety(data: dict) -> bool:
         data[i] = data[i].get()
 
     try:
-        data["Wager"] = int(data["Wager"])
+        data["Wager"] = float(data["Wager"])
         data["Odds"] = int(data["Odds"])
 
     except ValueError:
