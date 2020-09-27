@@ -232,15 +232,15 @@ class App(tk.Frame):
         for i in bets:
             self.listbox.insert("end", i)
         self.listbox.grid(row=0, column=0)
-        won_button = tk.Button(self.master, text="Won Bets", bg="green", bd=5,
-                               command=lambda: [self.get_selections(), db.close_bet(self.selections),
-                                                self.clear(), self.home_page()])
-        loss_button = tk.Button(self.master, text="loss Bets", bg="red", bd=5,
-                                command=lambda: [self.get_selections(loss=True), db.close_bet(self.selections),
-                                                 self.clear(), self.home_page()])
+        self.won_button = tk.Button(self.master, text="Won Bets", bg="green", bd=5,
+                                    command=lambda: [self.get_selections(), db.close_bet(self.selections),
+                                                     self.clear(), self.home_page()])
+        self.loss_button = tk.Button(self.master, text="loss Bets", bg="red", bd=5,
+                                     command=lambda: [self.get_selections(loss=True), db.close_bet(self.selections),
+                                                      self.clear(), self.home_page()])
 
-        won_button.grid(row=1, column=1, padx=25)
-        loss_button.grid(row=1, column=0)
+        self.won_button.grid(row=1, column=1, padx=25)
+        self.loss_button.grid(row=1, column=0)
 
     def close_parley(self):
         """Close a parley"""
