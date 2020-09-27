@@ -6,6 +6,8 @@ Items to keep track of: Bet, Odds, Amount, Payout, Outcome
 import sqlite3
 from datetime import date
 
+from typing import List
+
 
 def initialize(bank: float):
 
@@ -124,16 +126,7 @@ def view_bank() -> list:
     bank = c.fetchall()
     conn.close()
 
-    str_bank = []
-    for i in range(len(bank)):
-        str_version = ""
-        for j in bank[i]:
-            if type(j) == float:
-                j = round(j, 2)
-            str_version = str_version + " " + str(j)
-        str_bank.append(str_version)
-
-    return str_bank
+    return stringify(bank)
 
 
 def new_bet(data: dict):
@@ -207,6 +200,7 @@ def view_open_bets() -> list:
 
     c.execute("""SELECT * FROM open_parley""")
     open_parleys = c.fetchall()
+    conn.close()
 
     for bet in open_parleys:
         bet = list(bet)
@@ -214,9 +208,8 @@ def view_open_bets() -> list:
             bet.remove("NULL")
 
         open_bets.append(bet)
-    conn.close()
 
-    return open_bets
+    return stringify(open_bets)
 
 
 def view_closed_bets() -> list:  # todo combine this/view_open_bets()
@@ -238,7 +231,7 @@ def view_closed_bets() -> list:  # todo combine this/view_open_bets()
 
     conn.close()
 
-    return closed_bets
+    return stringify(closed_bets)
 
 
 def open_parley(data: dict):
@@ -329,17 +322,10 @@ def custom_search(data: dict) -> list:
 
     c.execute(query2)
     results2 = c.fetchall()
+    conn.close()
 
     results += results2
-    str_results = []
-    for i in range(len(results)):
-        str_version = ""
-        for j in results[i]:
-            str_version = str_version + " " + str(j)
-        str_results.append(str_version)
-
-    conn.close()
-    return str_results
+    return stringify(results)
 
 
 def calc_odds(odds: int, wager: float) -> float:
@@ -375,6 +361,21 @@ def covert_decimal(odds: int) -> float:
         decimal = 100 / abs(odds)
 
     return decimal
+
+
+def stringify(results: List[tuple]) -> List[str]:
+
+    str_results = []
+    for i in range(len(results)):
+        str_version = ""
+        for j in results[i]:
+            if type(j) == float:
+                j = round(j, 2)
+
+            str_version = str_version + " " + str(j)
+        str_results.append(str_version)
+
+    return str_results
 
 
 # todo:
