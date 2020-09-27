@@ -342,30 +342,14 @@ class App(tk.Frame):
     def confirm(self, _type=None):
 
         if not type_safety(self.data):
-            win = tk.Toplevel()
-            win.title("Error")
-            label = tk.Label(win, text="Wager/Odds must be a number", bg="red")
-            button = tk.Button(win, text="Okay", command=lambda: [win.grab_release(), win.destroy()],
-                               bg="green", bd='5')
-            label.pack()
-            button.pack()
-            win.grab_set()  # todo Make its own class for win
+            ErrorWindow("Wager/Odds must be a number")
             self.clear()
-
             return
 
         if _type == "bet":
             if not db.new_bet(self.data):
-                win = tk.Toplevel()
-                win.title("Error")
-                label = tk.Label(win, text="Wager is more than Bankroll", bg="red")
-                button = tk.Button(win, text="Okay", command=lambda: [win.grab_release(), win.destroy()],
-                                   bg="green", bd='5')
-                label.pack()
-                button.pack()
-                win.grab_set()  # todo Make its own class for win
+                ErrorWindow("Wager can't be more than Bankroll")
                 self.clear()
-
                 return
 
         elif _type == "parley":
@@ -373,6 +357,20 @@ class App(tk.Frame):
             db.open_parley(self.data)
 
         self.clear()
+
+
+class ErrorWindow:
+    """Display a custom error message in a new window. Main window is locked until the error is closed."""
+
+    def __init__(self, message):
+
+        win = tk.Toplevel()
+        win.title("Error")
+        label = tk.Label(win, text=message, bg="red")
+        button = tk.Button(win, text="Okay", command=lambda: [win.grab_release(), win.destroy()], bg="green", bd='5')
+        label.pack()
+        button.pack()
+        win.grab_set()
 
 
 if __name__ == "__main__":
