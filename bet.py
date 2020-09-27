@@ -63,7 +63,7 @@ spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 """
 
 
-def bankroll_amount():
+def bankroll_amount() -> tuple:
     """Return the amount of money in bankroll"""
 
     conn = sqlite3.connect('bets.db')
@@ -122,10 +122,18 @@ def view_bank() -> list:
 
     c.execute("""SELECT * FROM bankroll WHERE date != ? AND date != ?""", ("Master", "Winnings", ))
     bank = c.fetchall()
-
     conn.close()
 
-    return bank
+    str_bank = []
+    for i in range(len(bank)):
+        str_version = ""
+        for j in bank[i]:
+            if type(j) == float:
+                j = round(j, 2)
+            str_version = str_version + " " + str(j)
+        str_bank.append(str_version)
+
+    return str_bank
 
 
 def new_bet(data: dict):
@@ -323,9 +331,15 @@ def custom_search(data: dict) -> list:
     results2 = c.fetchall()
 
     results += results2
+    str_results = []
+    for i in range(len(results)):
+        str_version = ""
+        for j in results[i]:
+            str_version = str_version + " " + str(j)
+        str_results.append(str_version)
 
     conn.close()
-    return results
+    return str_results
 
 
 def calc_odds(odds: int, wager: float) -> float:
