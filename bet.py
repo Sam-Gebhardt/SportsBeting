@@ -75,13 +75,9 @@ def bankroll_amount():
     c.execute("""SELECT (amount) FROM bankroll WHERE date = ? """, ("Winnings",))
     change = c.fetchall()[0][0]
 
-    # c.execute("""SELECT SUM(wager) FROM open_bets""")
-    # open_sum = c.fetchall()[0][0]
-    # if open_sum:
-    # change += open_sum
-
     conn.close()
     current = round(current, 2)
+    change = round(change, 2)
 
     return current, change
 
@@ -318,6 +314,15 @@ def custom_search(data: dict) -> list:
 
     c.execute(query)
     results = c.fetchall()
+
+    query2 = f"""SELECT * FROM closed_bets WHERE sport LIKE '%{data["Sport"]}%' AND type LIKE '%{data["Type"]}%' AND
+    matchup LIKE '%{data["Matchup"]}%' AND bet_on LIKE '%{data["Bet"]}%' AND odds LIKE '%{data["Odds"]}%' AND
+    wager LIKE '%{data["Wager"]}%'"""
+
+    c.execute(query2)
+    results2 = c.fetchall()
+
+    results += results2
 
     conn.close()
     return results
