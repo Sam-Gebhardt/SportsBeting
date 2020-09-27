@@ -5,6 +5,7 @@ from os import path
 
 def type_safety(data: dict) -> bool:
     """Make sure each input is the correct type"""
+
     for i in data:
         data[i] = data[i].get()
 
@@ -19,6 +20,8 @@ def type_safety(data: dict) -> bool:
 
 
 def separate_parley(data: dict):
+    """Take user input and correctly separate it into a dict"""
+
     bets = data["Matchup"].split(",")
     for i in range(len(bets)):
         bets[i] = bets[i].strip()
@@ -27,6 +30,8 @@ def separate_parley(data: dict):
 
 
 def turn_to_str(data: dict) -> dict:
+    """Turn tk string object to a python str"""
+
     for i in data:
         data[i] = data[i].get()
 
@@ -34,11 +39,14 @@ def turn_to_str(data: dict) -> dict:
 
 
 def make_db():
+    """Check if a db exists, call the apportion function if needed"""
+
     if not path.isfile("bets.db"):
         db.initialize(0)
 
 
 class App(tk.Frame):
+    """Main window for the app"""
 
     def __init__(self, master=None):
         super().__init__(master)
@@ -73,10 +81,14 @@ class App(tk.Frame):
         self.home_page()
 
     def exit_button(self, col=99):
+        """Makes a button that kills the app window"""
+
         self.close_button = tk.Button(self.master, text='Exit', bd='5', command=self.master.destroy, bg="red")
         self.close_button.grid(row=99, column=col, sticky="SE")
 
     def menu(self):
+        """Creates a menu bar with the options: open, close, view, bank and wallet balance"""
+
         self.menu_bar = tk.Menu(self.master)
 
         _open = tk.Menu(self.menu_bar, tearoff=0)
@@ -111,11 +123,14 @@ class App(tk.Frame):
         self.master.config(menu=self.menu_bar)
 
     def update_bank(self):
+        """Update the bank balance that's displayed in the menu"""
+
         bank = db.bankroll_amount()[0]
         label_str = " " * 10 + f"Wallet: {bank}"
         self.menu_bar.entryconfig(5, label=label_str)
 
     def home_page(self):
+        """The homepage that displays the logo"""
 
         self.canvas = tk.Canvas(self.master, width=300, height=300, bg="green")
         img = tk.PhotoImage(file="m1.png")
@@ -126,6 +141,7 @@ class App(tk.Frame):
         self.exit_button()
 
     def open_bet_menu(self):
+        """Create entries/labels for making a bet"""
 
         self.label_sport = tk.Label(self.master, text="Sport")
         self.label_type = tk.Label(self.master, text="Type")
@@ -186,6 +202,8 @@ class App(tk.Frame):
         self.button.grid(row=3, column=2, pady=3)
 
     def open_parley_menu(self):
+        """Create entries/labels for making a parley bet"""
+
         self.label_sport = tk.Label(self.master, text="Sport")
         self.label_matchup = tk.Label(self.master, text="Matchup(s) separated by a ','")
         self.label_odds = tk.Label(self.master, text="Odds")
@@ -228,6 +246,7 @@ class App(tk.Frame):
 
     def close_bet(self):
         """Close a bet"""
+
         self.listbox = tk.Listbox(self.master, selectmode="multiple")
         self.listbox.config(width=0, height=0)
         bets = db.view_open_bets()
@@ -250,6 +269,7 @@ class App(tk.Frame):
 
     def get_selections(self, loss=False):
         """Get selections from listbox"""
+
         self.selections = [self.listbox.get(i) for i in self.listbox.curselection()]
         if loss:
             self.selections.append("L")
@@ -257,18 +277,24 @@ class App(tk.Frame):
             self.selections.append("W")
 
     def view_open(self):
+        """View open bets"""
+
         open_bets = db.view_open_bets()
         for i in range(len(open_bets)):
             self.view_labels.append(tk.Label(self.master, text=f"{open_bets[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
 
     def view_closed(self):
+        """View closed bets"""
+
         closed_bets = db.view_closed_bets()
         for i in range(len(closed_bets)):
             self.view_labels.append(tk.Label(self.master, text=f"{closed_bets[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
 
     def view_data(self):
+        """View data for a custom search"""
+
         results = db.custom_search(turn_to_str(self.data))
         self.clear()
         for i in range(len(results)):
@@ -292,7 +318,7 @@ class App(tk.Frame):
             self.view_labels[i].grid(row=i, column=0, sticky="w")
 
     def bank_add(self):
-        """Bank money to the bank"""
+        """Add money to the bank"""
 
         self.label_wager = tk.Label(self.master, text="Amount: ")
         wager = tk.StringVar()
@@ -338,6 +364,7 @@ class App(tk.Frame):
         self.selections = None
 
     def confirm(self, _type=None):
+        """Confirms that the inputted data conforms to the expected type"""
 
         if not type_safety(self.data):
             ErrorWindow("Wager/Odds must be a number")
@@ -385,3 +412,4 @@ if __name__ == "__main__":
 #  * exit button --Refractor so it doesn't have to be called everytime
 #  * logo (remove or make?)
 #  * Format outputs
+#  * Add a delete option
