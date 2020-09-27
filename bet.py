@@ -81,6 +81,7 @@ def bankroll_amount():
     # change += open_sum
 
     conn.close()
+    current = round(current, 2)
 
     return current, change
 
@@ -131,41 +132,6 @@ def view_bank() -> list:
     return bank
 
 
-def calc_odds(odds: int, wager: float) -> float:
-    """Turn American odds into $$"""
-
-    if odds >= 100:
-        to_win = wager * (odds / 100)
-    else:
-        to_win = (wager / abs(odds)) * 100
-
-    to_win = round(to_win, 2)
-    return to_win
-
-
-def implied_prob(odds: int) -> float:
-    """Turn odds into the applied probability of the event occurring"""
-
-    if odds < 0:
-        odds = abs(odds)
-        prob = (odds / (odds + 100)) * 100
-    else:
-        prob = (100 / (odds + 100)) * 100
-
-    return round(prob, 2)
-
-
-def covert_decimal(odds: int) -> float:
-    """Covert american odds to decimal """
-
-    if odds > 0:
-        decimal = odds / 100
-    else:
-        decimal = 100 / abs(odds)
-
-    return decimal
-
-
 def new_bet(data: dict):
     """Get info for new bets"""
 
@@ -191,6 +157,39 @@ def new_bet(data: dict):
     conn.commit()
     conn.close()
     bankroll_history(bankroll - data["Wager"])
+
+
+def close_bet(to_close: list):  # todo update Winnings bankroll
+    """Move an open bet to closed_bet table"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    outcome = to_close.pop()
+    for bet in to_close:
+        amount = bet[5] * -1
+        # lost on the bet == wager
+        if outcome == "W":
+            amount = float(bet[5]) + float(bet[6])
+            amount = round(amount, 2)
+            # amount = wager + to_win
+
+        c.execute("""INSERT INTO closed_bets (sport, type, matchup, bet_on, odds, wager, 
+                  to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                  (bet[0], bet[1], bet[2], bet[3], bet[4], bet[5], bet[6], outcome, amount, bet[7],))
+
+        c.execute("""DELETE FROM open_bets WHERE sport = ? AND type =? AND matchup = ? AND bet_on = ?
+                  AND odds = ? AND wager = ? AND to_win = ?""",
+                  (bet[0], bet[1], bet[2], bet[3], bet[4], bet[5], bet[6]))
+
+        c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (amount, "Master"))
+        conn.commit()
+
+        c.execute("""SELECT amount FROM bankroll WHERE date = ?""", ("Master",))
+        total = c.fetchall()[0][0]
+        bankroll_history(total)
+
+    conn.close()
 
 
 def view_open_bets() -> list:
@@ -236,38 +235,6 @@ def view_closed_bets() -> list:  # todo combine this/view_open_bets()
     conn.close()
 
     return closed_bets
-
-
-def close_bet(to_close: list):  # todo update Winnings bankroll
-    """Move an open bet to closed_bet table"""
-
-    conn = sqlite3.connect('bets.db')
-    c = conn.cursor()
-
-    outcome = to_close[-1]
-    for bet in to_close:
-        amount = bet[4] * -1
-        # lost on the bet == wager
-        if outcome == "W":
-            amount = float(bet[4]) + float(bet[5])
-            amount = round(amount, 2)
-            # amount = wager + to_win
-    
-        c.execute("""INSERT INTO closed_bets (sport, type, matchup, bet_on, odds, wager, 
-        to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                  (bet[0], bet[1], bet[2], bet[3], bet[4],
-                   bet[5], bet[6], outcome, amount, bet[7],))
-
-        c.execute("""DELETE FROM bet WHERE sport = ? AND matchup = ? AND bet_on = ?""",
-                  (bet[0], bet[2], bet[3]))
-
-        conn.commit()
-        # if outcome == "w":  # if won, then add to_win else subtract wager
-        #     bankroll_update(bet[j][6], wager=bet[j][5], add=True)
-        # else:
-        #     bankroll_update(bet[j][5])
-    
-    conn.close()
 
 
 def open_parley(data: dict):
@@ -354,6 +321,41 @@ def custom_search(data: dict) -> list:
 
     conn.close()
     return results
+
+
+def calc_odds(odds: int, wager: float) -> float:
+    """Turn American odds into $$"""
+
+    if odds >= 100:
+        to_win = wager * (odds / 100)
+    else:
+        to_win = (wager / abs(odds)) * 100
+
+    to_win = round(to_win, 2)
+    return to_win
+
+
+def implied_prob(odds: int) -> float:
+    """Turn odds into the applied probability of the event occurring"""
+
+    if odds < 0:
+        odds = abs(odds)
+        prob = (odds / (odds + 100)) * 100
+    else:
+        prob = (100 / (odds + 100)) * 100
+
+    return round(prob, 2)
+
+
+def covert_decimal(odds: int) -> float:
+    """Covert american odds to decimal """
+
+    if odds > 0:
+        decimal = odds / 100
+    else:
+        decimal = 100 / abs(odds)
+
+    return decimal
 
 
 # todo:
