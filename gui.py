@@ -34,26 +34,25 @@ def turn_to_str(data: dict) -> dict:
     return data
 
 
+def make_db():
+
+    if not path.isfile("bets.db"):
+        db.initialize(0)
+
+
 class App(tk.Frame):
 
     def __init__(self, master=None):
         super().__init__(master)
+
         self.master = master
         self.data = {}
 
-        self.label_sport = None  # Labels for entries
-        self.label_matchup = None
-        self.label_odds = None
-        self.label_wager = None
-        self.label_type = None
-        self.label_bet_on = None
+        self.label_sport = None  # Labels for entries when opening bets
+        self.label_matchup = self.label_odds = self.label_wager = self.label_type = self.label_bet_on = None
 
-        self.sport_input = None  # text entry boxes
-        self.match_input = None
-        self.odds_input = None
-        self.wager_input = None
-        self._type_input = None
-        self.bet_on_input = None
+        self.sport_input = None  # text entry boxes when opening bets
+        self.match_input = self.odds_input = self.wager_input = self._type_input = self.bet_on_input = None
 
         self.inputs = []  # list of input boxes
         self.labels = []  # list of labels
@@ -67,13 +66,12 @@ class App(tk.Frame):
         self.view_labels = []  # labels for viewing bets
         self.menu_bar = None  # menu bar
         self.selections = None  # list box selections to close bets
-        self.listbox = None
+
+        self.listbox = None  # widgets for closing bets
+        self.won_button = self.loss_button = None
 
         self.menu()
         # self.exit_button()
-
-        if not path.isfile("bets.db"):
-            db.initialize(0)
 
         self.home_page()
 
@@ -234,15 +232,15 @@ class App(tk.Frame):
         for i in bets:
             self.listbox.insert("end", i)
         self.listbox.grid(row=0, column=0)
-        won_button = tk.Button(self.master, text="Won Bets",
+        won_button = tk.Button(self.master, text="Won Bets", bg="green", bd=5,
                                command=lambda: [self.get_selections(), db.close_bet(self.selections),
-                                                self.listbox.destroy(), won_button.destroy(), self.home_page()])
-        loss_button = tk.Button(self.master, text="loss Bets",
+                                                self.clear(), self.home_page()])
+        loss_button = tk.Button(self.master, text="loss Bets", bg="red", bd=5,
                                 command=lambda: [self.get_selections(loss=True), db.close_bet(self.selections),
-                                                 self.listbox.destroy(), loss_button.destroy(), self.home_page()])
+                                                 self.clear(), self.home_page()])
 
-        won_button.grid(row=1, column=0, padx=25)
-        loss_button.grid(row=1, column=1, padx=25)
+        won_button.grid(row=1, column=1, padx=25)
+        loss_button.grid(row=1, column=0)
 
     def close_parley(self):
         """Close a parley"""
@@ -327,11 +325,13 @@ class App(tk.Frame):
             bet.destroy()
         self.view_labels = []
 
-        if self.button:
-            self.button.destroy()
-
         if self.canvas:
             self.img_label.config(image="")
+
+        widgets = [self.button, self.listbox, self.won_button, self.loss_button]
+        for i in widgets:
+            if i:
+                i.destroy()
 
         self.data.clear()
         self.selections = None
@@ -364,6 +364,7 @@ class App(tk.Frame):
 
 if __name__ == "__main__":
     root = tk.Tk()
+    make_db()
     app = App(master=root)
     root.title("Bet Tracker")
     root.geometry("1000x500")
