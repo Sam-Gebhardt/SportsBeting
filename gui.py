@@ -282,6 +282,7 @@ class App(tk.Frame):
         """View open bets"""
 
         open_bets = db.view_open_bets()
+        open_bets = db.stringify(open_bets)
         for i in range(len(open_bets)):
             self.view_labels.append(tk.Label(self.master, text=f"{open_bets[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
@@ -290,6 +291,7 @@ class App(tk.Frame):
         """View closed bets"""
 
         closed_bets = db.view_closed_bets()
+        closed_bets = db.stringify(closed_bets)
         for i in range(len(closed_bets)):
             self.view_labels.append(tk.Label(self.master, text=f"{closed_bets[i]}"))
             self.view_labels[i].grid(row=i, column=0, sticky="w")
@@ -298,6 +300,7 @@ class App(tk.Frame):
         """View data for a custom search"""
 
         results = db.custom_search(turn_to_str(self.data))
+        results = db.stringify(results)
         self.clear()
         for i in range(len(results)):
             self.view_labels.append(tk.Label(self.master, text=f"{results[i]}"))
