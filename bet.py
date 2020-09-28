@@ -18,15 +18,15 @@ def initialize(bank: float):
                 wager real, to_win real, date text)""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS closed_bets (sport text, type text, matchup text, bet_on text, 
-                odds text, wager real, to_win real, outcome text, change real, date text)""")
+                 odds text, wager real, to_win real, outcome text, change real, date text)""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS open_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
-                bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
+                 bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
                  to_win real, date text)""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS closed_parley (sport text, bet1 text, bet2 text, bet3 text, bet4 text, 
-            bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
-                to_win real, change real, date text)""")
+                 bet5 text, bet6 text, bet7 text, bet8 text, bet9 text, bet10 text, wager real, odds text,
+                 to_win real, outcome text, change real, date text)""")
     # only supports 10 team parley
 
     c.execute("""CREATE TABLE IF NOT EXISTS bankroll (date char, amount real)""")
@@ -256,22 +256,41 @@ def open_parley(data: dict):
     conn.close()
 
 
-def close_parley():
+def close_parley(to_close: list) -> None:
     """Close a parley bet"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    c.execute("""SELECT * FROM open_parley""")
-    par = c.fetchall()
+    outcome = to_close.pop()
+    for bet in to_close:
+        amount = bet[11] * -1
+        # lost on the bet == wager
+        if outcome == "W":
+            amount = float(bet[11]) + float(bet[12])
+            amount = round(amount, 2)
+            # amount = wager + to_win
 
-    cleansed = []
-    for bet in par:
-        new = []
-        for item in bet:
-            if item != "NULL":
-                new.append(item)
-        cleansed.append(new)
+        c.execute("""INSERT INTO closed_parley (sport, bet1, bet2, bet3, bet4, bet5, bet6, bet7, bet8, bet9, bet10, 
+                     wager, odds, to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                     ?, ?)""",
+                  (bet[0], bet[1], bet[2], bet[3], bet[4], bet[5], bet[6], bet[7], bet[8], bet[9], bet[10],
+                   bet[11], bet[12], bet[13], outcome, amount, bet[14]))
+
+        c.execute("""DELETE FROM open_parley WHERE sport = ? AND bet1 = ? AND, bet2 = ? AND, bet3 = ? 
+                     AND bet4 = ? AND bet5 = ? AND bet6 = ? AND bet7 = ? AND bet8 = ? AND bet9 = ? 
+                     AND bet10 = ? AND wager = ? AND odds = ? AND to_win = ?""",
+                  (bet[0], bet[1], bet[2], bet[3], bet[4], bet[5], bet[6], bet[7], bet[8], bet[9], bet[10],
+                   bet[11], bet[12], bet[13]))
+
+        c.execute("""UPDATE bankroll SET amount = amount + ? WHERE date = ?""", (amount, "Master"))
+        conn.commit()
+
+        c.execute("""SELECT amount FROM bankroll WHERE date = ?""", ("Master",))
+        total = c.fetchall()[0][0]
+        bankroll_history(total)
+
+    conn.close()
 
     conn.commit()
     conn.close()
@@ -379,6 +398,6 @@ def stringify(results: List[tuple]) -> List[str]:
 
 
 # todo:
-#  * remove unused functions
-#  * covert for gui use
 #  * general cleanup
+#  * Add a push
+#  * Add a function for viewing open parley
