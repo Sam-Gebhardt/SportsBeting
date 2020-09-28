@@ -126,10 +126,10 @@ def view_bank() -> list:
     bank = c.fetchall()
     conn.close()
 
-    return stringify(bank)
+    return bank
 
 
-def new_bet(data: dict):
+def new_bet(data: dict) -> bool:
     """Get info for new bets"""
 
     conn = sqlite3.connect('bets.db')
@@ -154,6 +154,7 @@ def new_bet(data: dict):
     conn.commit()
     conn.close()
     bankroll_history(bankroll - data["Wager"])
+    return True
 
 
 def close_bet(to_close: list):  # todo update Winnings bankroll
@@ -170,12 +171,14 @@ def close_bet(to_close: list):  # todo update Winnings bankroll
             amount = float(bet[5]) + float(bet[6])
             amount = round(amount, 2)
             # amount = wager + to_win
+        elif outcome == "P":
+            amount = bet[5]
 
         c.execute("""INSERT INTO closed_bets (sport, type, matchup, bet_on, odds, wager, 
                   to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                   (bet[0], bet[1], bet[2], bet[3], bet[4], bet[5], bet[6], outcome, amount, bet[7],))
 
-        c.execute("""DELETE FROM open_bets WHERE sport = ? AND type =? AND matchup = ? AND bet_on = ?
+        c.execute("""DELETE FROM open_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ?
                   AND odds = ? AND wager = ? AND to_win = ?""",
                   (bet[0], bet[1], bet[2], bet[3], bet[4], bet[5], bet[6]))
 
@@ -209,7 +212,7 @@ def view_open_bets() -> list:
 
         open_bets.append(bet)
 
-    return stringify(open_bets)
+    return open_bets
 
 
 def view_closed_bets() -> list:  # todo combine this/view_open_bets()
@@ -231,7 +234,19 @@ def view_closed_bets() -> list:  # todo combine this/view_open_bets()
 
     conn.close()
 
-    return stringify(closed_bets)
+    return closed_bets
+
+
+def view_open_parley() -> list:
+    """View open parleys. Returns a string version to display and a list version for interfacing with the db"""
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    c.execute("""SELECT * FROM open_parley""")
+    open_parleys = c.fetchall()
+
+    return open_parleys
 
 
 def open_parley(data: dict):
@@ -270,6 +285,8 @@ def close_parley(to_close: list) -> None:
             amount = float(bet[11]) + float(bet[12])
             amount = round(amount, 2)
             # amount = wager + to_win
+        elif outcome == "P":
+            amount = bet[11]
 
         c.execute("""INSERT INTO closed_parley (sport, bet1, bet2, bet3, bet4, bet5, bet6, bet7, bet8, bet9, bet10, 
                      wager, odds, to_win, outcome, change, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
@@ -289,8 +306,6 @@ def close_parley(to_close: list) -> None:
         c.execute("""SELECT amount FROM bankroll WHERE date = ?""", ("Master",))
         total = c.fetchall()[0][0]
         bankroll_history(total)
-
-    conn.close()
 
     conn.commit()
     conn.close()
@@ -344,7 +359,7 @@ def custom_search(data: dict) -> list:
     conn.close()
 
     results += results2
-    return stringify(results)
+    return results
 
 
 def calc_odds(odds: int, wager: float) -> float:
@@ -391,6 +406,9 @@ def stringify(results: List[tuple]) -> List[str]:
             if type(j) == float:
                 j = round(j, 2)
 
+            if j == "NULL":
+                continue
+
             str_version = str_version + " " + str(j)
         str_results.append(str_version)
 
@@ -399,5 +417,3 @@ def stringify(results: List[tuple]) -> List[str]:
 
 # todo:
 #  * general cleanup
-#  * Add a push
-#  * Add a function for viewing open parley
