@@ -244,20 +244,22 @@ class App(tk.Frame):
 
         self.button.grid(row=3, column=1, pady=3)
 
-    def close_bet(self):
+    def close_bet(self, func=db.close_bet, bets_func=db.view_open_bets):
         """Close a bet"""
 
         self.listbox = tk.Listbox(self.master, selectmode="multiple")
         self.listbox.config(width=0, height=0)
-        bets = db.view_open_bets()
+        bets = bets_func()
+
         for i in bets:
             self.listbox.insert("end", i)
+
         self.listbox.grid(row=0, column=0)
         self.won_button = tk.Button(self.master, text="Won Bets", bg="green", bd=5,
-                                    command=lambda: [self.get_selections(), db.close_bet(self.selections),
+                                    command=lambda: [self.get_selections(), func(self.selections),
                                                      self.clear(), self.update_bank(), self.home_page()])
-        self.loss_button = tk.Button(self.master, text="loss Bets", bg="red", bd=5,
-                                     command=lambda: [self.get_selections(loss=True), db.close_bet(self.selections),
+        self.loss_button = tk.Button(self.master, text="Lost Bets", bg="red", bd=5,
+                                     command=lambda: [self.get_selections(loss=True), func(self.selections),
                                                       self.clear(), self.update_bank(), self.home_page()])
 
         self.won_button.grid(row=1, column=1, padx=25)
@@ -265,7 +267,7 @@ class App(tk.Frame):
 
     def close_parley(self):
         """Close a parley"""
-        pass
+        self.close_bet(func=db.close_parley, bets_func=db.view_open_parley)
 
     def get_selections(self, loss=False):
         """Get selections from listbox"""
@@ -411,5 +413,6 @@ if __name__ == "__main__":
 #  * Math tab w/ imp prob, covert, to_make
 #  * exit button --Refractor so it doesn't have to be called everytime
 #  * logo (remove or make?)
-#  * Format outputs
 #  * Add a delete option
+#  * Add a push
+#  * Win-loss-push + total money up
