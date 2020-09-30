@@ -75,7 +75,7 @@ class App(tk.Frame):
         self.selections = None  # list box selections to close bets
 
         self.listbox = None  # widgets for closing bets
-        self.won_button = self.loss_button = None
+        self.won_button = self.loss_button = self.push_button = None
 
         self.menu()
         self.home_page()
@@ -116,6 +116,10 @@ class App(tk.Frame):
         bank.add_command(label="History", command=lambda: [self.clear(), self.bank_history(), self.exit_button()])
         bank.add_command(label="Add", command=lambda: [self.clear(), self.bank_add(), self.exit_button()])
         self.menu_bar.add_cascade(label="Bank", menu=bank)
+
+        math = tk.Menu(self.menu_bar, tearoff=0)
+        math.add_command(label="All", command=lambda: [self.clear()])
+        self.menu_bar.add_cascade(label="Math", menu=math)
 
         current_bankroll = db.bankroll_amount()[0]
         label_str = " " * 10 + f"Wallet: {current_bankroll}"
@@ -261,20 +265,26 @@ class App(tk.Frame):
         self.loss_button = tk.Button(self.master, text="Lost Bets", bg="red", bd=5,
                                      command=lambda: [self.get_selections(loss=True), func(self.selections),
                                                       self.clear(), self.update_bank(), self.home_page()])
+        self.push_button = tk.Button(self.master, text="Push", bg="blue", bd=5, anchor="e",
+                                     command=lambda: [self.get_selections(push=True), func(self.selections),
+                                                      self.clear(), self.update_bank(), self.home_page()])
 
-        self.won_button.grid(row=1, column=1, padx=25)
-        self.loss_button.grid(row=1, column=0)
+        self.won_button.grid(row=1, column=2)
+        self.loss_button.grid(row=1, column=0, sticky="e")
+        self.push_button.grid(row=1, column=1)
 
     def close_parley(self):
         """Close a parley"""
         self.close_bet(func=db.close_parley, bets_func=db.view_open_parley)
 
-    def get_selections(self, loss=False):
+    def get_selections(self, loss=False, push=False):
         """Get selections from listbox"""
 
         self.selections = [self.listbox.get(i) for i in self.listbox.curselection()]
         if loss:
             self.selections.append("L")
+        elif push:
+            self.selections.append("P")
         else:
             self.selections.append("W")
 
@@ -360,7 +370,7 @@ class App(tk.Frame):
         if self.canvas:
             self.img_label.config(image="")
 
-        widgets = [self.button, self.close_button, self.listbox, self.won_button, self.loss_button]
+        widgets = [self.button, self.close_button, self.listbox, self.won_button, self.loss_button, self.push_button]
         for i in widgets:
             if i:
                 i.destroy()
@@ -412,7 +422,6 @@ if __name__ == "__main__":
     app.mainloop()
 
 # todo:
-#  * close bet/close parley
 #  * Math tab w/ imp prob, covert, to_make
 #  * exit button --Refractor so it doesn't have to be called everytime
 #  * logo (remove or make?)
