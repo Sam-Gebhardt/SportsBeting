@@ -122,16 +122,34 @@ class App(tk.Frame):
         self.menu_bar.add_cascade(label="Math", menu=math)
 
         current_bankroll = db.bankroll_amount()[0]
-        label_str = " " * 10 + f"Wallet: {current_bankroll}"
+        label_str = " " * 10 + f"Wallet: {current_bankroll}" + " " * 10
         self.menu_bar.add_cascade(label=label_str)
         self.master.config(menu=self.menu_bar)
 
-    def update_bank(self):
+        record = db.record()
+        label_record = " " * 10 + f"Record: {record}" + " " * 10
+        self.menu_bar.add_cascade(label=label_record)
+        self.master.config(menu=self.menu_bar)
+
+        winnings = db.bankroll_amount()[1]
+        label_win = " " * 10 + f"Winnings: {winnings}" + " " * 10
+        self.menu_bar.add_cascade(label=label_win)
+        self.master.config(menu=self.menu_bar)
+
+    def update_menu_bar(self):
         """Update the bank balance that's displayed in the menu"""
 
         bank = db.bankroll_amount()[0]
         label_str = " " * 10 + f"Wallet: {bank}"
-        self.menu_bar.entryconfig(5, label=label_str)
+        self.menu_bar.entryconfig(6, label=label_str)
+
+        record = db.record()
+        label_record = " " * 10 + f"Record: {record}" + " " * 10
+        self.menu_bar.entryconfig(7, label=label_record)
+
+        winnings = db.bankroll_amount()[1]
+        label_win = " " * 10 + f"Winnings: {winnings}" + " " * 10
+        self.menu_bar.entryconfig(8, label=label_win)
 
     def home_page(self):
         """The homepage that displays the logo"""
@@ -201,7 +219,7 @@ class App(tk.Frame):
 
         self.button = tk.Button(self.master, text="Confirm", command=lambda:
                                 [self.confirm(_type="bet"), self.home_page(),
-                                 self.update_bank()], bd='5', bg="green")
+                                 self.update_menu_bar()], bd='5', bg="green")
 
         self.button.grid(row=3, column=2, pady=3)
 
@@ -261,13 +279,13 @@ class App(tk.Frame):
         self.listbox.grid(row=0, column=0)
         self.won_button = tk.Button(self.master, text="Won Bets", bg="green", bd=5,
                                     command=lambda: [self.get_selections(), func(self.selections),
-                                                     self.clear(), self.update_bank(), self.home_page()])
+                                                     self.clear(), self.update_menu_bar(), self.home_page()])
         self.loss_button = tk.Button(self.master, text="Lost Bets", bg="red", bd=5,
                                      command=lambda: [self.get_selections(loss=True), func(self.selections),
-                                                      self.clear(), self.update_bank(), self.home_page()])
+                                                      self.clear(), self.update_menu_bar(), self.home_page()])
         self.push_button = tk.Button(self.master, text="Push", bg="blue", bd=5, anchor="e",
                                      command=lambda: [self.get_selections(push=True), func(self.selections),
-                                                      self.clear(), self.update_bank(), self.home_page()])
+                                                      self.clear(), self.update_menu_bar(), self.home_page()])
 
         self.won_button.grid(row=1, column=2)
         self.loss_button.grid(row=1, column=0, sticky="e")
@@ -348,7 +366,7 @@ class App(tk.Frame):
 
         self.button = tk.Button(self.master, text="Add", command=lambda:
                                 [db.bankroll_add(self.data["Wager"].get()),  # send change to db
-                                 self.update_bank(), self.clear(), self.home_page()], bd='5', bg="green")
+                                 self.update_menu_bar(), self.clear(), self.home_page()], bd='5', bg="green")
 
         self.button.grid(row=1, column=2, padx=13)
 
@@ -426,5 +444,4 @@ if __name__ == "__main__":
 #  * exit button --Refractor so it doesn't have to be called everytime
 #  * logo (remove or make?)
 #  * Add a delete option
-#  * Add a push
 #  * Win-loss-push + total money up
