@@ -41,7 +41,6 @@ def initialize(bank: float):
 
 """
 Table contents
-
 sport: sport
 type: spread, ml, prop, custom
 matchup: Teams playing
@@ -53,14 +52,10 @@ to_win: Amount won if bet hits
 *change: change in money
 date: when it was placed
 * = closed only
-
 ex:
 Say for Seahawks vs Falcons I bet $5 on the Seahawks ML(-125), then the table entry would be:
-
 ML, Seahawks vs Falcons, Seahawks ML, -125, 5, 4, W, 9
-
 If I bet on the spread:
-
 spread, Seahawks vs Falcons, Seahawks -1.0, -115, 5, 4.35, L, 0
 """
 
@@ -106,7 +101,7 @@ def bankroll_history(master_amount: int):
 
 def bankroll_add(amount: float) -> None:
     """Add money to the bank"""
-    
+
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
@@ -361,6 +356,26 @@ def custom_search(data: dict) -> list:
     results += results2
     return results
 
+
+def record() -> str:
+
+    conn = sqlite3.connect('bets.db')
+    c = conn.cursor()
+
+    c.execute("""SELECT * FROM closed_bets""")
+    data = c.fetchall()
+
+    win, loss, push = 0, 0, 0
+    for bet in data:
+        if bet[7] == "W":
+            win += 1
+        elif bet[7] == "L":
+            loss += 1
+        elif bet[7] == "P":
+            push += 1
+
+    record_str = f"{win}-{loss}-{push}"
+    return record_str
 
 def calc_odds(odds: int, wager: float) -> float:
     """Turn American odds into $$"""
