@@ -118,7 +118,9 @@ class App(tk.Frame):
         self.menu_bar.add_cascade(label="Bank", menu=bank)
 
         math = tk.Menu(self.menu_bar, tearoff=0)
-        math.add_command(label="All", command=lambda: [self.clear()])
+        math.add_command(label="Probability", command=lambda: [self.clear()])
+        math.add_command(label="Calculator", command=lambda: [self.clear()])
+        math.add_command(label="Convert", command=lambda: [self.clear()])
         self.menu_bar.add_cascade(label="Math", menu=math)
 
         current_bankroll = db.bankroll_amount()[0]
@@ -441,7 +443,6 @@ if __name__ == "__main__":
 
 # todo:
 #  * Math tab w/ imp prob, covert, to_make
-#  * exit button --Refractor so it doesn't have to be called everytime
+#  * exit button --Refractor so it doesn't have to be called every time
 #  * logo (remove or make?)
 #  * Add a delete option
-#  * Win-loss-push + total money up
