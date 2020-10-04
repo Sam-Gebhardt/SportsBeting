@@ -118,23 +118,23 @@ class App(tk.Frame):
         self.menu_bar.add_cascade(label="Bank", menu=bank)
 
         math = tk.Menu(self.menu_bar, tearoff=0)
-        math.add_command(label="Probability", command=lambda: [self.clear()])
+        math.add_command(label="Probability", command=lambda: [self.clear(), self.implied_prob()])
         math.add_command(label="Calculator", command=lambda: [self.clear()])
         math.add_command(label="Convert", command=lambda: [self.clear()])
         self.menu_bar.add_cascade(label="Math", menu=math)
 
         current_bankroll = db.bankroll_amount()[0]
-        label_str = " " * 10 + f"Wallet: {current_bankroll}" + " " * 10
+        label_str = " " * 3 + f"Wallet: {current_bankroll}" + " " * 3
         self.menu_bar.add_cascade(label=label_str)
         self.master.config(menu=self.menu_bar)
 
         record = db.record()
-        label_record = " " * 10 + f"Record: {record}" + " " * 10
+        label_record = " " * 3 + f"Record: {record}" + " " * 3
         self.menu_bar.add_cascade(label=label_record)
         self.master.config(menu=self.menu_bar)
 
         winnings = db.bankroll_amount()[1]
-        label_win = " " * 10 + f"Winnings: {winnings}" + " " * 10
+        label_win = " " * 3 + f"Winnings: {winnings}" + " " * 3
         self.menu_bar.add_cascade(label=label_win)
         self.master.config(menu=self.menu_bar)
 
@@ -142,16 +142,23 @@ class App(tk.Frame):
         """Update the bank balance that's displayed in the menu"""
 
         bank = db.bankroll_amount()[0]
-        label_str = " " * 10 + f"Wallet: {bank}"
+        label_str = " " * 3 + f"Wallet: {bank}"
         self.menu_bar.entryconfig(6, label=label_str)
 
         record = db.record()
-        label_record = " " * 10 + f"Record: {record}" + " " * 10
+        label_record = " " * 3 + f"Record: {record}" + " " * 3
         self.menu_bar.entryconfig(7, label=label_record)
 
         winnings = db.bankroll_amount()[1]
-        label_win = " " * 10 + f"Winnings: {winnings}" + " " * 10
+        label_win = " " * 3 + f"Winnings: {winnings}" + " " * 3
         self.menu_bar.entryconfig(8, label=label_win)
+
+    def implied_prob(self):
+        """Calculate the implied probability of American odds"""
+
+        label_implied_prob = tk.Label(self.master, text="Implied Probability")
+        implied_prob = tk.StringVar()
+        implied_prob_input = tk.Entry(self.master, width=7, textvariable=implied_prob)
 
     def home_page(self):
         """The homepage that displays the logo"""
