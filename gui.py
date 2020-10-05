@@ -159,6 +159,11 @@ class App(tk.Frame):
         label_implied_prob = tk.Label(self.master, text="Implied Probability")
         implied_prob = tk.StringVar()
         implied_prob_input = tk.Entry(self.master, width=7, textvariable=implied_prob)
+        implied_prob_button = tk.Button(self.master, text="Calculate", command=None, bg="Green", bd=5)
+
+        label_implied_prob.grid(row=1, column=1, padx=10, pady=10)
+        implied_prob_input.grid(row=1, column=2, padx=20)
+        implied_prob_button.grid(row=1, column=3)
 
     def home_page(self):
         """The homepage that displays the logo"""
