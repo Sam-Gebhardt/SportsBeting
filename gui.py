@@ -35,6 +35,9 @@ def turn_to_str(data: dict) -> dict:
     for i in data:
         data[i] = data[i].get()
 
+    if data["Prob"]:
+        data["Prob"] = int(data["Prob"])
+
     return data
 
 
@@ -158,18 +161,20 @@ class App(tk.Frame):
 
         label_implied_prob = tk.Label(self.master, text="Implied Probability")
         implied_prob = tk.StringVar()
-        self.data["Prob"] = implied_prob
-
         implied_prob_input = tk.Entry(self.master, width=7, textvariable=implied_prob)
-        implied_prob_button = tk.Button(self.master, text="Calculate", command=[self.calc_prob()], bg="Green", bd=5)
+        self.data["Prob"] = implied_prob
 
         label_implied_prob.grid(row=1, column=1, padx=10, pady=10)
         implied_prob_input.grid(row=1, column=2, padx=20)
+
+        implied_prob_button = tk.Button(self.master, text="Calculate", command=[self.calc_prob()], bg="Green", bd=5)
         implied_prob_button.grid(row=1, column=3)
 
     def calc_prob(self):
         turn_to_str(self.data)
-        tk.Label(self.master, text=db.implied_prob(int(self.data["Prob"])))  # todo type saftey
+        if self.data["Prob"]:  # todo fix this; bug somewhere
+            t = tk.Label(self.master, text=db.implied_prob(int(self.data["Prob"])))  # todo type saftey
+            t.grid(row=2, column=2)
 
     def home_page(self):
         """The homepage that displays the logo"""
