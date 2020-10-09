@@ -1,6 +1,7 @@
 import tkinter as tk
 import bet as db
 from os import path
+import info
 
 
 def type_safety(data: dict) -> bool:
@@ -125,7 +126,7 @@ class App(tk.Frame):
 
         math = tk.Menu(self.menu_bar, tearoff=0)
         math.add_command(label="Probability", command=lambda: [self.clear(), self.implied_prob()])
-        math.add_command(label="Calculator", command=lambda: [self.clear()])
+        math.add_command(label="Calculator", command=lambda: [self.clear(), self.calculator()])
         math.add_command(label="Convert", command=lambda: [self.clear()])
         self.menu_bar.add_cascade(label="Math", menu=math)
 
@@ -171,13 +172,33 @@ class App(tk.Frame):
         self.implied_prob_input.grid(row=1, column=2, padx=20)
 
         self.implied_prob_button = tk.Button(self.master, text="Confirm", command=lambda:
-                                        [self.calc_prob()], bd='5', bg="green")
+                                             [self.calc_prob()], bd='5', bg="green")
         self.implied_prob_button.grid(row=1, column=3)
 
     def calc_prob(self):
         self.display_prob_label = tk.Label(self.master, text=db.implied_prob(int(self.data["Prob"].get())))
         # todo type safety
         self.display_prob_label.grid(row=2, column=2)
+
+    def calculator(self):
+
+        self.label_odds = tk.Label(self.master, text="Odds:")
+        self.label_wager = tk.Label(self.master, text="Wager:")
+
+        odds = tk.StringVar()
+        wager = tk.StringVar()
+
+        self.odds_input = tk.Entry(self.master, width=7, textvariable=odds)
+        self.wager_input = tk.Entry(self.master, width=7, textvariable=wager)
+
+        self.implied_prob_button = tk.Button(self.master, text="Confirm", command=lambda:
+                                             [db.calc_odds(int(odds.get()), int(wager.get()))], bd='5', bg="green")
+
+        self.label_odds.grid(row=1, column=0)
+        self.label_wager.grid(row=2, column=0)
+        self.odds_input.grid(row=1, column=1)
+        self.wager_input.grid(row=2, column=1)
+        self.implied_prob_button.grid(row=3, column=1, pady=10)
 
     def home_page(self):
         """The homepage that displays the logo"""
