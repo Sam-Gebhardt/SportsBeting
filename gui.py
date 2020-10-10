@@ -1,7 +1,7 @@
 import tkinter as tk
 import bet as db
 from os import path
-import info
+# import info
 
 
 def type_safety(data: dict) -> bool:
@@ -115,7 +115,7 @@ class App(tk.Frame):
         view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed(), self.exit_button()])
         view.add_command(label="All", command=lambda:
                          [self.clear(), self.view_open(), self.view_closed(), self.exit_button()])
-
+        view.add_command(label="Delete", command=lambda: [self.clear(), self.delete()])
         view.add_command(label="Search", command=lambda: [self.clear(), self.search(), self.exit_button(col=5)])
         self.menu_bar.add_cascade(label="View", menu=view)
 
@@ -390,6 +390,24 @@ class App(tk.Frame):
         self.button.destroy()
         self.button = tk.Button(self.master, text="Search", command=lambda: [self.view_data()], bg="green", bd=5)
         self.button.grid(row=3, column=3)
+
+    def delete(self):
+
+        self.listbox = tk.Listbox(self.master, selectmode="multiple")
+        self.listbox.config(width=0, height=0)
+
+        open_bets = db.view_open_bets()
+        closed_bets = db.view_closed_bets()
+        open_bets = db.stringify(open_bets)
+        closed_bets = db.stringify(closed_bets)
+
+        for i in open_bets:
+            self.listbox.insert("end", i)
+
+        for i in closed_bets:
+            self.listbox.insert("end", i)
+
+        self.listbox.grid(row=0, column=0)
 
     def bank_history(self):
         """See bankroll history"""
