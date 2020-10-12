@@ -306,28 +306,15 @@ def close_parley(to_close: list) -> None:
     conn.close()
 
 
-def delete_bet():
+def delete_bet(remove: list) -> None:
     """Delete a bet"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    remove = input("Remove open or closed bet: ")
-    query = f"""SELECT * FROM {remove}_bets"""
-    c.execute(query)
-    bets = c.fetchall()
-
-    for i, j in enumerate(bets):
-        print(f"{i}: {j}")
-
-    to_close = input("Enter bets to delete: ")
-    nums = to_close.split(",")
-    for i in nums:
-        i = int(i.strip())
-        c.execute(f"""DELETE FROM {remove}_bets WHERE date = ? AND matchup = ? AND odds = ?""",
-                  (bets[i][6], bets[i][1], bets[i][3]))
-
-    print(f"Removed: {to_close}")
+    for i in remove:
+        c.execute(f"""DELETE FROM open_bets WHERE date = ? AND matchup = ? AND odds = ?""",
+                  (i[6], i[1], i[3]))
 
     conn.commit()
     conn.close()
@@ -376,6 +363,7 @@ def record() -> str:
 
     record_str = f"{win}-{loss}-{push}"
     return record_str
+
 
 def calc_odds(odds: int, wager: float) -> float:
     """Turn American odds into $$"""
