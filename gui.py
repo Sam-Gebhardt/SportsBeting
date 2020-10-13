@@ -409,6 +409,18 @@ class App(tk.Frame):
 
         self.listbox.grid(row=0, column=0)
 
+        self.button = tk.Button(self.master, text="Delete", command=[self.delete_bet(), self.clear()], bg="green", bd=5)
+
+    def delete_bet(self):
+        self.selections = [self.listbox.get(i) for i in self.listbox.curselection()]
+        # open_bets = db.view_open_bets()
+        # closed_bets = db.view_closed_bets()
+        # open_bets = db.stringify(open_bets)
+        # closed_bets = db.stringify(closed_bets)
+
+        db.delete_bet(self.selections)
+
+
     def bank_history(self):
         """See bankroll history"""
 
