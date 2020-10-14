@@ -313,8 +313,12 @@ def delete_bet(remove: list) -> None:
     c = conn.cursor()
 
     for i in remove:
-        c.execute(f"""DELETE FROM open_bets WHERE date = ? AND matchup = ? AND odds = ?""",
-                  (i[6], i[1], i[3]))
+        c.execute(f"""DELETE FROM closed_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ? AND 
+                      odds = ? AND wager = ? AND to_win = ? AND date = ?""",
+                  (i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]))
+        c.execute("""DELETE FROM closed_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ? AND 
+                     odds = ? AND wager = ? AND to_win = ? AND outcome = ? AND change = ? date = ?""",
+                  (i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], i[9]))
 
     conn.commit()
     conn.close()
