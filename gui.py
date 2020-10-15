@@ -84,6 +84,9 @@ class App(tk.Frame):
         self.listbox = None  # widgets for closing bets
         self.won_button = self.loss_button = self.push_button = None
 
+        self.listbox_del = None  # del bets
+        self.selections_del = None
+
         self.menu()
         self.home_page()
 
@@ -393,8 +396,8 @@ class App(tk.Frame):
 
     def delete(self):
 
-        self.listbox = tk.Listbox(self.master, selectmode="multiple")
-        self.listbox.config(width=0, height=0)
+        self.listbox_del = tk.Listbox(self.master, selectmode="multiple")
+        self.listbox_del.config(width=0, height=0)
 
         open_bets = db.view_open_bets()
         closed_bets = db.view_closed_bets()
@@ -402,24 +405,18 @@ class App(tk.Frame):
         closed_bets = db.stringify(closed_bets)
 
         for i in open_bets:
-            self.listbox.insert("end", i)
+            self.listbox_del.insert("end", i)
 
         for i in closed_bets:
-            self.listbox.insert("end", i)
+            self.listbox_del.insert("end", i)
 
-        self.listbox.grid(row=0, column=0)
-
-        self.button = tk.Button(self.master, text="Delete", command=[self.delete_bet(), self.clear()], bg="green", bd=5)
+        self.button = tk.Button(self.master, text="Delete", command=[self.delete_bet()], bg="pink", bd=5)
+        self.button.grid(row=1, column=1)
+        self.listbox_del.grid(row=0, column=0)
 
     def delete_bet(self):
-        self.selections = [self.listbox.get(i) for i in self.listbox.curselection()]
-        # open_bets = db.view_open_bets()
-        # closed_bets = db.view_closed_bets()
-        # open_bets = db.stringify(open_bets)
-        # closed_bets = db.stringify(closed_bets)
-
-        db.delete_bet(self.selections)
-
+        self.selections_del = [self.listbox_del.get(i) for i in self.listbox_del.curselection()]
+        db.delete_bet(self.selections_del)
 
     def bank_history(self):
         """See bankroll history"""
@@ -468,7 +465,8 @@ class App(tk.Frame):
             self.img_label.config(image="")
 
         widgets = [self.button, self.close_button, self.listbox, self.won_button, self.loss_button, self.push_button,
-                   self.implied_prob_input, self.label_implied_prob, self.display_prob_label, self.implied_prob_button]
+                   self.implied_prob_input, self.label_implied_prob, self.display_prob_label, self.implied_prob_button,
+                   self.listbox_del, self.selections_del]
         for i in widgets:
             if i:
                 i.destroy()
