@@ -410,13 +410,14 @@ class App(tk.Frame):
         for i in closed_bets:
             self.listbox_del.insert("end", i)
 
-        self.button = tk.Button(self.master, text="Delete", command=[self.delete_bet()], bg="pink", bd=5)
+        self.button = tk.Button(self.master, text="Delete", bg="red", bd=5,
+                                command=lambda: [self.delete_bet(), db.delete_bet(self.selections_del),
+                                                 self.clear(), self.update_menu_bar(), self.home_page()])
         self.button.grid(row=1, column=1)
         self.listbox_del.grid(row=0, column=0)
 
     def delete_bet(self):
         self.selections_del = [self.listbox_del.get(i) for i in self.listbox_del.curselection()]
-        db.delete_bet(self.selections_del)
 
     def bank_history(self):
         """See bankroll history"""
