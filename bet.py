@@ -152,7 +152,7 @@ def new_bet(data: dict) -> bool:
     return True
 
 
-def close_bet(to_close: list):  # todo update Winnings bankroll
+def close_bet(to_close: list):
     """Move an open bet to closed_bet table"""
 
     conn = sqlite3.connect('bets.db')
@@ -306,19 +306,25 @@ def close_parley(to_close: list) -> None:
     conn.close()
 
 
-def delete_bet(remove: list) -> None:
+def delete_bet(remove) -> None:
     """Delete a bet"""
 
     conn = sqlite3.connect('bets.db')
     c = conn.cursor()
 
-    for i in remove:
-        c.execute(f"""DELETE FROM closed_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ? AND 
-                      odds = ? AND wager = ? AND to_win = ? AND date = ?""",
-                  (i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]))
-        c.execute("""DELETE FROM closed_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ? AND 
-                     odds = ? AND wager = ? AND to_win = ? AND outcome = ? AND change = ? date = ?""",
-                  (i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], i[9]))
+    if type(remove) == tuple:  # in the case only 1 bet is deleted
+        remove = [remove]
+
+    for entry in remove:
+        for i in entry:
+            if len(entry) == 8:
+                c.execute(f"""DELETE FROM closed_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ? AND 
+                              odds = ? AND wager = ? AND to_win = ? AND date = ?""",
+                          (i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]))
+            else:
+                c.execute("""DELETE FROM closed_bets WHERE sport = ? AND type = ? AND matchup = ? AND bet_on = ? AND 
+                             odds = ? AND wager = ? AND to_win = ? AND outcome = ? AND change = ? date = ?""",
+                          (i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], i[9]))
 
     conn.commit()
     conn.close()
