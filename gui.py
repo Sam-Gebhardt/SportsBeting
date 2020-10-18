@@ -111,6 +111,7 @@ class App(tk.Frame):
         _close = tk.Menu(self.menu_bar, tearoff=0)
         _close.add_command(label="Bet", command=lambda: [self.clear(), self.close_bet(), self.exit_button()])
         _close.add_command(label="Parley", command=lambda: [self.clear(), self.close_parley(), self.exit_button()])
+        _close.add_command(label="Delete", command=lambda: [self.clear(), self.delete()])
         self.menu_bar.add_cascade(label="Close", menu=_close)
 
         view = tk.Menu(self.menu_bar, tearoff=0)
@@ -118,7 +119,6 @@ class App(tk.Frame):
         view.add_command(label="Closed", command=lambda: [self.clear(), self.view_closed(), self.exit_button()])
         view.add_command(label="All", command=lambda:
                          [self.clear(), self.view_open(), self.view_closed(), self.exit_button()])
-        view.add_command(label="Delete", command=lambda: [self.clear(), self.delete()])
         view.add_command(label="Search", command=lambda: [self.clear(), self.search(), self.exit_button(col=5)])
         self.menu_bar.add_cascade(label="View", menu=view)
 
@@ -401,8 +401,8 @@ class App(tk.Frame):
 
         open_bets = db.view_open_bets()
         closed_bets = db.view_closed_bets()
-        open_bets = db.stringify(open_bets)
-        closed_bets = db.stringify(closed_bets)
+        # open_bets = db.stringify(open_bets)
+        # closed_bets = db.stringify(closed_bets)
 
         for i in open_bets:
             self.listbox_del.insert("end", i)
